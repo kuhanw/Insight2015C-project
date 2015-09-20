@@ -1,0 +1,33 @@
+widget,aggregate_score,aggregate_placement,keywords 
+ homeaffordability,1.8e+03,2.3e+03,_house_ buying_a_home buying_a_house how_much_house down_payment home_loan how_much_home how_much_house_can_i_afford how_much_home_can_i_afford mortgage loan home_purchase first_home home_buying home_buyer purchasing home_purchase downpayment real_estate buy_a_house buy_a_home foreclosed foreclosure 
+ howmuchlifeinsurance,5.3e+02,9.1e+02,how_much_life_insurance life_insurance_calculator 
+ lifeinsurancequotes,0,0,new_york_life met_life metlife term_life perm_life permanent_life whole_life insurance premium_life no_exam_life no_medical_life insurance_exam cost_of_life guaranteed_life life_policy universal_life_ life_insurance_quotes insurance_quotes mutual_life western_life_insurance 
+ retirementcalculator,1.4e+03,1.6e+03,retire retiring retires retirement retirement_calculator pension annuity _401k_ 401(k)_ 401_(k) _403b_ _403(b)_ _ira_ _roth_ saving 
+ incometaxcalculator,9.8e+02,1.3e+03,income_tax income_taxes taxes state_taxes federal_income _fica_ _tax_ 
+ studentloancalculator,6.2e+02,7.2e+02,college school phd mba student_loan financial_aid students harvard yale ivy_league medical_school med_school graduate college_degree sallie_mae law_school _pell_ pell_grant plus_loan _529_ _529_a 
+ investmentcalculator,5.4e+02,7.5e+02,inflation interest_rate _index_ indexes indices currency real_estate\n 
+ budgetcalculator,3e+03,4e+03,budget emergency_loan frugal personal_loan save_money credit_cards debt debt_payoff credit credit_counseling debt_consolidation personal_loan bad_credit travel flights checking balance_transfer bankruptcy abroad foreign vacation holiday certificate_of_deposit wedding marriage \n 
+ costoflivingcalculator,2.6e+02,4.6e+02,cost_of_living cost_comparison housing_cost _rent_ food budget _cola_ living_cost 
+ assetallocationcalculator,2e+03,3.5e+03,_options_ equities equity _bond_ treasury _gold silver _futures_ commodity portfolio nasdaq _S&P_ _dow_ _ETF_ _bonds_ _stocks_ blue_chip mutual_fund forex dividend invest\n 
+ careercalculator,1.2e+03,2.6e+03,_profession _employment_ _job _career _compensation _salary_ _vocation _occupation _amateur_ _income_ _earnings_ cashflow cash_flow _take_home _wage_ _promotion _remuneration _wealth_ 
+ politicswidget?candidate=bencarson,0,0,bencarson ben_carson 
+ socialsecuritycalculator,0,0,social_security medicare death_benefit government_benefit 
+ politicswidget?candidate=berniesanders,0,0,berniesanders bernie_sanders 
+ politicswidget?candidate=bobbyjindal,0,0,bobbyjindal bobby_jindal _jindal 
+ politicswidget?candidate=carlyfiorina,0,0,carlyfiorina carly_fiorina _fiorina 
+ politicswidget?candidate=chrischristie,0,0,chrischristie chris_christie _christie 
+ politicswidget?candidate=donaldtrump,0,0,donaldtrump donald_trump donald_j._trump donald_j_trump 
+ politicswidget?candidate=hillaryclinton,0,0,hillaryclinton hillary hilary_clinton hillary_clinton hillary_r._clinton hillary_r_clinton _clinton 
+ politicswidget?candidate=jebbush,0,0,jebbush jeb_bush 
+ politicswidget?candidate=jimwebb,0,0,jimwebb jim_webb _webb 
+ politicswidget?candidate=joebiden,0,0,joebiden joe_biden _biden 
+ politicswidget?candidate=johnkasich,0,0,johnkasich john_kasich _kasich 
+ politicswidget?candidate=lindseygraham,0,0,lindseygraham lindsey_graham 
+ politicswidget?candidate=marcorubio,0,0,marcorubio marco_rubio _rubio 
+ politicswidget?candidate=martinomalley,0,0,martinomalley martin_omalley _omalley 
+ politicswidget?candidate=mikehuckabee,0,0,mikehuckabee mike_huckabee _huckabee 
+ politicswidget?candidate=randpaul,0,0,randpaul rand_paul 
+ politicswidget?candidate=rickperry,0,0,rickperry rick_perry 
+ politicswidget?candidate=ricksantorum,0,0,ricksantorum rick_santorum _santorum 
+ politicswidget?candidate=scottwalker,0,0,scottwalker scott_walker 
+ 
