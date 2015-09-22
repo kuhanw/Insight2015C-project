@@ -5,6 +5,8 @@ import nltk
 from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.stem import WordNetLemmatizer
+import matplotlib.pyplot as plt
+import numpy as np
 
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
@@ -91,25 +93,38 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	c5.SaveAs(figures_folder+ "linear_correlation.pdf")
 
 	summary_scoring_metrics = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores  ]
-	print summary_scoring_metrics
+	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ '.txt', 'w')
+#	with open(figures_folder+"validation_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ ".csv", 'wb') as csvfile:
+
 	for i in range(len(summary_scoring_metrics)):
-			print "model:%s %d" % (summary_scoring_metrics[i][2], i)
-			print summary_scoring_metrics[i][0]
-			print summary_scoring_metrics[i][1]
+	#	score_metrics.write(summary_scoring_metrics[i][2])
+		score_metrics.write(summary_scoring_metrics[i][0])
+	#	score_metrics.write(summary_scoring_metrics[i][1])
+		print summary_scoring_metrics[i][2]
+		print summary_scoring_metrics[i][0]
+		print summary_scoring_metrics[i][1]
+		plt.figure()
+		plt.plot(np.arange(0,len(summary_scoring_metrics[i][0]),1), summary_scoring_metrics[i][0], 'ro', markersize=10 )
+		plt.title(summary_scoring_metrics[i][2])
+		plt.xlabel("K-Fold")
+		plt.ylabel("Score")
+		plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] +'.pdf') 
+	score_metrics.close()
 	word_priority = []
 	print len(list_of_features)
 	print len(lasso_results_parameters[3])
 
+
 	for i in range(len(list_of_features)):
 		word_priority_list = [list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], 
 					logistic_results_parameters[2][0][i], binary_x_logistic_results_parameters[2][0][i], forest_results_parameters[2][i],0] 
-		print "%s,%.3g,%.3g,%.3g,%.3g,%.3g" % (list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], logistic_results_parameters[2][0][i],  binary_x_logistic_results_parameters[2][0][i], forest_results_parameters[2][i])
+		#print "%s,%.3g,%.3g,%.3g,%.3g,%.3g" % (list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], logistic_results_parameters[2][0][i],  binary_x_logistic_results_parameters[2][0][i], forest_results_parameters[2][i])
 
 
 		word_priority.append(word_priority_list)
 	#	print "b_lasso:%.2g, b_elastic_net:%.2g, b_logistic:%.2g, word:%s" % (coef_path_lasso_cv.coef_[i], coef_path_elastic_cv.coef_[i], coef_path_logistic_cv.coef_[0][i], list_of_features[i])
 
-	print word_priority
+	#print word_priority
 
 	word_priority_lasso = sorted (word_priority, key= lambda x: float(x[1]), reverse=True)
 	word_priority_elastic = sorted (word_priority, key= lambda x: float(x[2]), reverse=True)
@@ -143,7 +158,7 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 	ranked_words_header = [["lasso rank"],["lasso word"],["elastic rank"],["elastic word"],["logistic rank"],["logistic word"],["b-logistic rank"],["b-logistic word"],["forest rank"],["forest word"],["linear rank"],["linear word"]]
 	#ranked_words_header = ["lasso rank","lasso word","elastic rank","elastic word","logistic rank","logistic word","b-logistic rank","b-logistic word","forest rank","forest word"]
-	with open(figures_folder+"ranked_words_ngram_.csv", 'wb') as csvfile:
+	with open(figures_folder+"ranked_words_ngram_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ ".csv", 'wb') as csvfile:
 	    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
 	    spamwriter.writerow(ranked_words_header)
 	    for i in range(len(ranked_key_words)):

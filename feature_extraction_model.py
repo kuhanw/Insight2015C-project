@@ -1,6 +1,5 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-#from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from sklearn.linear_model import LassoCV
@@ -35,6 +34,12 @@ figures_folder = "figures/"+widget_selection + "/"
 #NLP knobs
 Decode_Error='ignore'
 
+#CV metrics
+Scoring="mean_squared_error"
+CV=3
+Ngram_Range_Low=int(sys.argv[2])
+Ngram_Range_High=int(sys.argv[3])
+
 #Modeling metrics
 Max_Iter=1000
 Fit_Intercept=False
@@ -46,14 +51,9 @@ N_Alphas=1000
 Normalize=False
 Alphas=[0]
 Tol=0.001
-Min_DF=0.05
+Min_DF=float(sys.argv[4])
 
 N_Estimators=10
-#CV metrics
-Scoring="mean_squared_error"
-CV=3
-Ngram_Range_Low=int(sys.argv[2])
-Ngram_Range_High=int(sys.argv[3])
 
 corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection)
 
@@ -79,23 +79,29 @@ print "#######vectorizer stop words############"
 print vectorizer.get_stop_words()
 print "#######vocabulary########"
 print vectorizer.vocabulary_
-print corpus_array
 
 transformer = TfidfTransformer()
 tfidf = transformer.fit_transform(corpus_array)
 
 tfidf_array = tfidf.toarray()
 
-print tfidf_array
+#print tfidf_array
 
-print engagement_rate
-print tfidf_array.shape
+#print engagement_rate
+#print tfidf_array.shape
 
-print len(engagement_rate)
+#print len(engagement_rate)
 
 X = np.array(tfidf_array)
 y = np.array(engagement_rate)
 print X
+
+binary_y_pre = []
+
+for i in range(len(y)):
+	if y[i]>0: binary_y_pre.append(1)
+	else: binary_y_pre.append(0)
+binary_y = np.array(binary_y_pre)
 
 coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Intercept) 
 coef_path_lasso_cv = LassoCV(normalize=Normalize, max_iter=Max_Iter, copy_X=True, cv=CV, verbose=Verbose, fit_intercept=Fit_Intercept, tol=Tol)#, alphas=Alphas) 
@@ -104,14 +110,8 @@ coef_path_logistic_cv = LogisticRegression( tol=Tol)
 coef_path_binary_x_logistic_cv = LogisticRegression( tol=Tol)
 coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features=number_of_features)
  
-binary_y_pre = []
 
-for i in range(len(y)):
-	if y[i]>0: binary_y_pre.append(1)
-	else: binary_y_pre.append(0)
-binary_y = np.array(binary_y_pre)
-print "binary y"
-print binary_y
+
 
 binary_X = vectorizer_binary.fit_transform(corpus)
 coef_path_forest_cv.fit(X,binary_y)
@@ -151,14 +151,10 @@ reduced_feature_matrix_logistic = []
 print "list of features from logistic regression:%d" % len(logistic_results_parameters[2][0])
 print len(X[0])
 transpose_training_X = zip(*X)
-print "transpose_training_x: %d" % len(transpose_training_X)
-print "feature list length:%d" % len(list_of_features)
 reduced_feature_list_logistic = []
 
 for i in range(len(logistic_results_parameters[2][0])):
 	if float(logistic_results_parameters[2][0][i])>0.01:
-#		print "logistic beta:%.3g, word:%s" % (logistic_results_parameters[2][0][i], list_of_features[i])
-		#temp_list = [list_of_features[i],transpose_training_X[i]]
 		reduced_feature_matrix_logistic.append(transpose_training_X[i])
 		reduced_feature_list_logistic.append(list_of_features[i])
 
@@ -178,6 +174,7 @@ print "reduced_feature_list_logistic length:%d" % len(reduced_feature_list_logis
 print "linear_coefficient length:%d" % len(coef_path_linear_cv.coef_)
 linear_word_results = []
 ###LINEAR REGRESSION END
+
 for i in range(len(coef_path_linear_cv.coef_)):
 	temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
 	linear_word_results.append(temp_list)
