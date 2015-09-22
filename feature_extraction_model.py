@@ -23,7 +23,7 @@ import re
 import json
 
 from read_json import *
-
+from post_processing import *
 import ROOT
 
 ROOT.gStyle.SetOptStat(11111)
@@ -43,7 +43,7 @@ N_Alphas=1000
 Normalize=False
 Alphas=[0]
 Tol=0.001
-
+Min_DF=0.05
 
 N_Estimators=10
 #CV metrics
@@ -67,31 +67,21 @@ my_stop_words = text.ENGLISH_STOP_WORDS.union(my_words)
 print "size of corpus:%d" % len(corpus)
 
 vectorizer = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
-				ngram_range=(Ngram_Range_Low,Ngram_Range_High),  min_df=0.05)#, max_df=0.85)
+				ngram_range=(Ngram_Range_Low,Ngram_Range_High),  min_df=Min_DF)#, max_df=0.85)
 vectorizer_binary = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
-			ngram_range=(Ngram_Range_Low,Ngram_Range_High), binary="True",  min_df=0.05)#, max_df=0.85)
+			ngram_range=(Ngram_Range_Low,Ngram_Range_High), binary="True",  min_df=Min_DF)#, max_df=0.85)
 
 X = vectorizer.fit_transform(corpus)
 
 corpus_array = X.toarray()
 number_of_features = len(vectorizer.get_feature_names())
+list_of_features = vectorizer.get_feature_names()
 print "list of features:%d" % number_of_features
 print "#######vectorizer stop words############"
 print vectorizer.get_stop_words()
 print "#######vocabulary########"
 print vectorizer.vocabulary_
 print corpus_array
-
-#with open(figures_folder+'diagonostic_stop_'+widget_selection+'words.csv', 'wb') as csvfile:
-#    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
-#    spamwriter.writerow(vectorizer.get_stop_words())
-#csvfile.close()
-#with open(igures_folder+'diagonostic_vocabulary'+widget_selection+'.csv', 'wb') as csvfile:
-#    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
-#    spamwriter.writerow(vectorizer.vocabulary_)
-#csvfile.close()
-
-##reweight usingTf-idf term weighting
 
 transformer = TfidfTransformer()
 tfidf = transformer.fit_transform(corpus_array)
@@ -164,15 +154,15 @@ print "list of features from logistic regression:%d" % len(logistic_results_para
 print len(X[0])
 transpose_training_X = zip(*X)
 print "transpose_training_x: %d" % len(transpose_training_X)
-print "feature list length:%d" % len(vectorizer.get_feature_names())
+print "feature list length:%d" % len(list_of_features)
 reduced_feature_list_logistic = []
 
 for i in range(len(logistic_results_parameters[2][0])):
 	if float(logistic_results_parameters[2][0][i])>0.01:
-#		print "logistic beta:%.3g, word:%s" % (logistic_results_parameters[2][0][i], vectorizer.get_feature_names()[i])
-		#temp_list = [vectorizer.get_feature_names()[i],transpose_training_X[i]]
+#		print "logistic beta:%.3g, word:%s" % (logistic_results_parameters[2][0][i], list_of_features[i])
+		#temp_list = [list_of_features[i],transpose_training_X[i]]
 		reduced_feature_matrix_logistic.append(transpose_training_X[i])
-		reduced_feature_list_logistic.append(vectorizer.get_feature_names()[i])
+		reduced_feature_list_logistic.append(list_of_features[i])
 
 print "reduced_feature_matrix_logistic before transpose:%d" % len(reduced_feature_matrix_logistic)	
 reduced_feature_matrix_logistic = zip(*reduced_feature_matrix_logistic)
@@ -195,105 +185,9 @@ for i in range(len(coef_path_linear_cv.coef_)):
 	linear_word_results.append(temp_list)
 word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
 
-hist_0 = ROOT.TH2D("hist_0","hist_0",2,-0.5,1.5,2,-0.5,1.5)
-hist_3 = ROOT.TH2D("hist_3","hist_3",2,-0.5,1.5,2,-0.5,1.5)
-hist_4 = ROOT.TH2D("hist_4","hist_4",2,-0.5,1.5,2,-0.5,1.5)
+model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, binary_x_logistic_results_parameters, linear_results_parameters]
 
-hist_1 = ROOT.TH2D("hist_1","hist_1",100,0,1,100,0,1)
-hist_2 = ROOT.TH2D("hist_2","hist_2",100,0,1,100,0,1)
-hist_5 = ROOT.TH2D("hist_5","hist_5",100,0,1,100,0,1)
+model_scores = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores]
 
-for i in range(len(y)):
-	hist_0.Fill(y,forest_results_parameters[0][i])
-	hist_1.Fill(y,lasso_results_parameters[0][i])
-	hist_2.Fill(y,elastic_results_parameters[0][i])
-	hist_3.Fill(y,logistic_results_parameters[0][i])
-	hist_4.Fill(y,binary_logistic_results_parameters[0][i])
-	hist_5.Fill(y,linear_results_parameters[0][i])
+post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, Ngram_Range_Low, Ngram_Range_High)
 
-
-c0 = ROOT.TCanvas("c0","c0",0,0,600,600)
-hist_0.GetXaxis().SetTitle("Truth Target")
-hist_0.GetYaxis().SetTitle("Predicted Target")
-hist_0.Draw("COLZ")
-c1 = ROOT.TCanvas("c1","c1",0,0,600,600)
-hist_1.GetXaxis().SetTitle("Truth Target")
-hist_1.GetYaxis().SetTitle("Predicted Target")
-hist_1.Draw("COLZ")
-c2 = ROOT.TCanvas("c2","c2",0,0,600,600)
-hist_2.GetXaxis().SetTitle("Truth Target")
-hist_2.GetYaxis().SetTitle("Predicted Target")
-hist_2.Draw("COLZ")
-c3 = ROOT.TCanvas("c3","c3",0,0,600,600)
-hist_3.GetXaxis().SetTitle("Truth Target")
-hist_3.GetYaxis().SetTitle("Predicted Target")
-hist_3.Draw("COLZ")
-c4 = ROOT.TCanvas("c4","c4",0,0,600,600)
-hist_4.GetXaxis().SetTitle("Truth Target")
-hist_4.GetYaxis().SetTitle("Predicted Target")
-hist_4.Draw("COLZ")
-c5 = ROOT.TCanvas("c5","c5",0,0,600,600)
-hist_5.GetXaxis().SetTitle("Truth Target")
-hist_5.GetYaxis().SetTitle("Predicted Target")
-hist_5.Draw("COLZ")
-c0.SaveAs(figures_folder+ "forest_correlation.pdf")
-c1.SaveAs(figures_folder+ "lasso_correlation.pdf")
-c2.SaveAs(figures_folder+ "elastic_correlation.pdf")
-c3.SaveAs(figures_folder+ "logistic_correlation.pdf")
-c4.SaveAs(figures_folder+ "binary_logistic_correlation.pdf")
-c5.SaveAs(figures_folder+ "linear_correlation.pdf")
-print "%d-FOLD VALIDATION" % CV
-
-for i in range(len(summary_scoring_metrics)):
-		print "model:%d " % (i)
-		print summary_scoring_metrics[i]
-
-word_priority = []
-for i in range(len(vectorizer.get_feature_names())):
-	word_priority_list = [vectorizer.get_feature_names()[i], coef_path_lasso_cv.coef_[i], coef_path_elastic_cv.coef_[i], 
-				coef_path_logistic_cv.coef_[0][i], coef_path_binary_x_logistic_cv.coef_[0][i], coef_path_forest_cv.feature_importances_[i],0] 
-			#	coef_path_linear_cv.coef_[i]]
-#	word_priority_list = [vectorizer.get_feature_names()[i], coef_path_lasso_cv.coef_[i], coef_path_elastic_cv.coef_[i], 
-#				coef_path_logistic_cv.coef_[0][i], coef_path_binary_x_logistic_cv.coef_[0][i], coef_path_forest_cv.feature_importances_[i], 
-#				0]
-	word_priority.append(word_priority_list)
-#	print "b_lasso:%.2g, b_elastic_net:%.2g, b_logistic:%.2g, word:%s" % (coef_path_lasso_cv.coef_[i], coef_path_elastic_cv.coef_[i], coef_path_logistic_cv.coef_[0][i], vectorizer.get_feature_names()[i])
-
-word_priority_lasso = sorted (word_priority, key= lambda x: float(x[1]), reverse=True)
-word_priority_elastic = sorted (word_priority, key= lambda x: float(x[2]), reverse=True)
-word_priority_logistic = sorted (word_priority, key= lambda x: float(x[3]), reverse=True)
-word_priority_binary_logistic = sorted (word_priority, key= lambda x: float(x[4]), reverse=True)
-word_priority_forest = sorted (word_priority, key= lambda x: float(x[5]), reverse=True)
-#word_priority_linear = sorted (word_priority, key= lambda x: float(x[6]), reverse=True)
-
-print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
-ranked_key_words = []
-
-for i in range(len(word_priority_lasso)):
-	try:
-		ranked_key_words_list = [word_priority_lasso[i][1], word_priority_lasso[i][0],
-		word_priority_elastic[i][2], word_priority_elastic[i][0],
-		word_priority_logistic[i][3], word_priority_logistic[i][0],
-		word_priority_binary_logistic[i][4], word_priority_binary_logistic[i][0],
-		word_priority_forest[i][5], word_priority_forest[i][0],
-		word_priority_linear[i][0], word_priority_linear[i][1]]
-	except:
-		ranked_key_words_list = [word_priority_lasso[i][1], word_priority_lasso[i][0],
-		word_priority_elastic[i][2], word_priority_elastic[i][0],
-		word_priority_logistic[i][3], word_priority_logistic[i][0],
-		word_priority_binary_logistic[i][4], word_priority_binary_logistic[i][0],
-		word_priority_forest[i][5], word_priority_forest[i][0],
-		0, 0]
-	ranked_key_words.append(ranked_key_words_list)
-#	print ranked_key_words[i]
-
-ranked_words_header = [["lasso rank"],["lasso word"],["elastic rank"],["elastic word"],["logistic rank"],["logistic word"],["b-logistic rank"],["b-logistic word"],["forest rank"],["forest word"],["linear rank"],["linear word"]]
-#ranked_words_header = ["lasso rank","lasso word","elastic rank","elastic word","logistic rank","logistic word","b-logistic rank","b-logistic word","forest rank","forest word"]
-with open(figures_folder+"ranked_words_"+widget_selection+"v01.csv", 'wb') as csvfile:
-    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow(ranked_words_header)
-    for i in range(len(ranked_key_words)):
-       	spamwriter.writerow(ranked_key_words[i])
-
-csvfile.close()	
