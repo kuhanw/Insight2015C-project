@@ -20,7 +20,6 @@ from time import time
 import csv
 import numpy as np
 import re
-import json
 
 from read_json import *
 from post_processing import *
@@ -29,11 +28,15 @@ import ROOT
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
 
+#Widget selection
+widget_selection = sys.argv[1]
+figures_folder = "figures/"+widget_selection + "/"
+
 #NLP knobs
 Decode_Error='ignore'
 
 #Modeling metrics
-Max_Iter=10000
+Max_Iter=1000
 Fit_Intercept=False
 Return_Models=False
 Positive=True
@@ -49,14 +52,9 @@ N_Estimators=10
 #CV metrics
 Scoring="mean_squared_error"
 CV=3
-Ngram_Range_Low=1
-Ngram_Range_High=2
+Ngram_Range_Low=int(sys.argv[2])
+Ngram_Range_High=int(sys.argv[3])
 
-#Widget selection
-widget_selection = 'budgetcalculator'
-#widget_selection = 'assetallocationcalculator'
-#widget_selection = 'careercalculator'
-figures_folder = "figures/"+widget_selection + "/"
 corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection)
 
 my_words = ["considering","proper","agree", "soon", "changing", "wish", "flickr", "protect","including", "example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"]#, "improve wisegeek", "related article", "u'improve wisegeek"]
@@ -130,23 +128,23 @@ binary_x_logistic_cv_score = cross_validation.cross_val_score(coef_path_binary_x
 
 forest_results_parameters = [ coef_path_forest_cv.predict(X), coef_path_forest_cv.get_params, coef_path_forest_cv.feature_importances_, 
 				coef_path_forest_cv.classes_, coef_path_forest_cv.n_classes_]
-forest_scores = [forest_cv_score, classification_report(binary_y, forest_results_parameters[0])]
+forest_scores = [forest_cv_score, classification_report(binary_y, forest_results_parameters[0]), 'forest']
 
 lasso_results_parameters = [coef_path_lasso_cv.predict(X), coef_path_lasso_cv.get_params, coef_path_lasso_cv.alphas_, coef_path_lasso_cv.coef_]  
 
-lasso_scores = [lasso_cv_score, r2_score(y,lasso_results_parameters[0])]
+lasso_scores = [lasso_cv_score, r2_score(y,lasso_results_parameters[0]), 'lasso']
 
 elastic_results_parameters = [ coef_path_elastic_cv.predict(X), coef_path_elastic_cv.get_params, coef_path_elastic_cv.alphas_ ,
 				coef_path_elastic_cv.coef_]
-elastic_scores = [elastic_cv_score, r2_score(y,elastic_results_parameters[0])]
+elastic_scores = [elastic_cv_score, r2_score(y,elastic_results_parameters[0]), 'elastic']
 
 logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logistic_cv.get_params, coef_path_logistic_cv.coef_]
 
-logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0])]
+logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic']
 
 binary_x_logistic_results_parameters = [coef_path_binary_x_logistic_cv.predict(X), coef_path_binary_x_logistic_cv.get_params, coef_path_binary_x_logistic_cv.coef_]
 
-binary_x_logistic_scores = [binary_x_logistic_cv_score, classification_report(binary_y, binary_x_logistic_results_parameters[0])]
+binary_x_logistic_scores = [binary_x_logistic_cv_score, classification_report(binary_y, binary_x_logistic_results_parameters[0]), 'binary_logistic']
 
 ##LINEAR REGRESSION METHOD BEGIN
 reduced_feature_matrix_logistic = []
@@ -172,9 +170,9 @@ coef_path_linear_cv.fit(reduced_feature_matrix_logistic,y)
 
 linear_cv_score = cross_validation.cross_val_score(coef_path_linear_cv, reduced_feature_matrix_logistic, y, n_jobs=2, cv=CV, scoring=Scoring)
 
-linear_results_parameters = [ coef_path_linear_cv.predict(reduced_feature_matrix_logistic), coef_path_linear_cv.get_params, coef_path_linear_cv.coef_]
+linear_results_parameters = [ coef_path_linear_cv.predict(reduced_feature_matrix_logistic), coef_path_linear_cv.get_params,reduced_feature_list_logistic, coef_path_linear_cv.coef_]
 
-linear_scores = [linear_cv_score, r2_score(y, linear_results_parameters[0])]
+linear_scores = [linear_cv_score, r2_score(y, linear_results_parameters[0]), 'linear']
 
 print "reduced_feature_list_logistic length:%d" % len(reduced_feature_list_logistic)
 print "linear_coefficient length:%d" % len(coef_path_linear_cv.coef_)
@@ -183,7 +181,8 @@ linear_word_results = []
 for i in range(len(coef_path_linear_cv.coef_)):
 	temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
 	linear_word_results.append(temp_list)
-word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
+
+#word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
 
 model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, binary_x_logistic_results_parameters, linear_results_parameters]
 
