@@ -11,9 +11,11 @@ from matplotlib.collections import LineCollection
 from joblib import Parallel, delayed
 import csv
 
-engagement_path = "data/engagement.csv"
-captivate_path = "data/captivate_keywords.csv"
-scores_path = "data/scores.csv"
+data_set = "data_set_2"
+
+engagement_path = "data/" + data_set + "/engagement.csv"
+captivate_path = "data/" + data_set + "/captivate_keywords.csv"
+scores_path = "data/" + data_set + "/scores.csv"
 
 #engagement.csv
 
@@ -130,7 +132,7 @@ for i in range(len(engagement_values)):
 #	if engagement_values[i][0] in one_rank_scores
 	      #  else: continue
 print one_ranked_correlation_matched_indices
-with open('one_rank_correlation_v10b.csv', 'wb') as csvfile:
+with open('one_rank_correlation_v10_' + data_set + '.csv', 'wb') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar=' ', quoting=csv.QUOTE_MINIMAL)
     for i in range(len(one_ranked_correlation_matched_indices)):
@@ -171,15 +173,4 @@ plt.bar(np.arange(0,31,1),widget_placements,1)
 plt.xlabel("Widgets")
 plt.ylabel("Total Placement")
 plt.show()
-plt.savefig("figure/WidgetStats.pdf")
-
-#w_file = open('histograms_data.csv','wb')
-
-#text="widget,aggregate_score,aggregate_placement,keywords \r\n " 
-#w_file.write(text)
-
-#for i in range(len(widget_scores)):	
-#	#print zip(*one_rank_scores)[1][i]
-#	text="%s,%.2g,%.2g,%s \r\n " % (captivate_keywords[i][1], widget_scores[i],widget_placements[i],captivate_keywords[i][2])
-#	w_file.write(text)
-#w_file.close()
+plt.savefig("figures/WidgetStats.pdf")

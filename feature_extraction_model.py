@@ -87,6 +87,10 @@ corpus_array = X.toarray()
 #######DOWNSAMPLING BEGIN############
 print "number of zeros:%d" % engagement_rate.count(0)
 print "total number of engagements:%d" % len(engagement_rate)
+zero_rate = float(engagement_rate.count(0))/float(len(engagement_rate))
+print "zero rate:%.3g" % zero_rate
+if zero_rate>0.5: DSampling=True
+
 training_matrix = np.array(corpus_array)
 engagement_matrix = np.array(engagement_rate)
 print "training matrix:%d, engagement matrix:%d" % (len(training_matrix), len(engagement_matrix))

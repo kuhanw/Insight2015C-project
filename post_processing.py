@@ -56,34 +56,40 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 	for i in range(len(y)):
 		#hist_0.Fill(y[i],forest_results_parameters[0][i])
-		hist_1.Fill(y[i],lasso_results_parameters[0][i])
-		hist_2.Fill(y[i],elastic_results_parameters[0][i])
-		hist_3.Fill(y[i],logistic_results_parameters[0][i])
+		hist_1.Fill(y[i]/len(y),lasso_results_parameters[0][i]/len(y))
+		hist_2.Fill(y[i]/len(y),elastic_results_parameters[0][i]/len(y))
+		hist_3.Fill(y[i]/len(y),logistic_results_parameters[0][i]/len(y))
 		#hist_4.Fill(y[i],binary_x_logistic_results_parameters[0][i])
-		hist_5.Fill(y[i],linear_results_parameters[0][i])
+		hist_5.Fill(y[i]/len(y),linear_results_parameters[0][i]/len(y))
 
 
 	c0 = ROOT.TCanvas("c0","c0",0,0,600,600)
+	c0.SetLogy()
 	hist_0.GetXaxis().SetTitle("Truth Target")
 	hist_0.GetYaxis().SetTitle("Predicted Target")
 	hist_0.Draw("COLZ")
 	c1 = ROOT.TCanvas("c1","c1",0,0,600,600)
+	c1.SetLogy()
 	hist_1.GetXaxis().SetTitle("Truth Target")
 	hist_1.GetYaxis().SetTitle("Predicted Target")
 	hist_1.Draw("COLZ")
 	c2 = ROOT.TCanvas("c2","c2",0,0,600,600)
+	c2.SetLogy()
 	hist_2.GetXaxis().SetTitle("Truth Target")
 	hist_2.GetYaxis().SetTitle("Predicted Target")
 	hist_2.Draw("COLZ")
 	c3 = ROOT.TCanvas("c3","c3",0,0,600,600)
+	c3.SetLogy()
 	hist_3.GetXaxis().SetTitle("Truth Target")
 	hist_3.GetYaxis().SetTitle("Predicted Target")
 	hist_3.Draw("COLZ")
 	c4 = ROOT.TCanvas("c4","c4",0,0,600,600)
+	c4.SetLogy()
 	hist_4.GetXaxis().SetTitle("Truth Target")
 	hist_4.GetYaxis().SetTitle("Predicted Target")
 	hist_4.Draw("COLZ")
 	c5 = ROOT.TCanvas("c5","c5",0,0,600,600)
+	c5.SetLogy()
 	hist_5.GetXaxis().SetTitle("Truth Target")
 	hist_5.GetYaxis().SetTitle("Predicted Target")
 	hist_5.Draw("COLZ")
@@ -98,18 +104,19 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	summary_scoring_metrics = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores  ]
 	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF) +"_"+PageLoaded+"_"+WidgetViewed+'.txt', 'w')
 	for i in range(len(summary_scoring_metrics)):
-		try:
-			print summary_scoring_metrics[i]
-			score_metrics.write(summary_scoring_metrics[i][0])
-			print summary_scoring_metrics[i][2]
-			print summary_scoring_metrics[i][0]
-			print summary_scoring_metrics[i][1]
-			plt.figure()
-			plt.title(summary_scoring_metrics[i][2])
-			plt.xlabel("K-Fold")
-			plt.ylabel("Score")
-			plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] + "_" + str(Min_DF)  +"_"+PageLoaded+"_"+WidgetViewed +'.pdf') 
-		except: continue
+		#try:
+		if i==0 or i==4: continue
+		print summary_scoring_metrics[i]
+		score_metrics.write(summary_scoring_metrics[i][0])
+		print summary_scoring_metrics[i][2]
+		print summary_scoring_metrics[i][0]
+		print summary_scoring_metrics[i][1]
+		plt.figure()
+		plt.title(summary_scoring_metrics[i][2])
+		plt.xlabel("K-Fold")
+		plt.ylabel("Score")
+		plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] + "_" + str(Min_DF)  +"_"+PageLoaded+"_"+WidgetViewed +'.pdf') 
+		#except: continue
 	score_metrics.close()
 	word_priority = []
 	print len(list_of_features)
