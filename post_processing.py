@@ -11,8 +11,10 @@ import numpy as np
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
 
-def post_processing(model_results, model_scores, training_set, target, widget, list_of_features, Ngram_Range_Low, Ngram_Range_High):
+def post_processing(model_results, model_scores, training_set, target, widget, list_of_features, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed):
 
+	PageLoaded = str(PageLoaded)
+	WidgetViewed = str(WidgetViewed)	
 
 	widget_selection = widget
 
@@ -53,11 +55,11 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	hist_5 = ROOT.TH2D("hist_5","hist_5",100,0,1,100,0,1)
 
 	for i in range(len(y)):
-		hist_0.Fill(y[i],forest_results_parameters[0][i])
+		#hist_0.Fill(y[i],forest_results_parameters[0][i])
 		hist_1.Fill(y[i],lasso_results_parameters[0][i])
 		hist_2.Fill(y[i],elastic_results_parameters[0][i])
 		hist_3.Fill(y[i],logistic_results_parameters[0][i])
-		hist_4.Fill(y[i],binary_x_logistic_results_parameters[0][i])
+		#hist_4.Fill(y[i],binary_x_logistic_results_parameters[0][i])
 		hist_5.Fill(y[i],linear_results_parameters[0][i])
 
 
@@ -85,30 +87,29 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	hist_5.GetXaxis().SetTitle("Truth Target")
 	hist_5.GetYaxis().SetTitle("Predicted Target")
 	hist_5.Draw("COLZ")
-	c0.SaveAs(figures_folder+ "forest_correlation.pdf")
-	c1.SaveAs(figures_folder+ "lasso_correlation.pdf")
-	c2.SaveAs(figures_folder+ "elastic_correlation.pdf")
-	c3.SaveAs(figures_folder+ "logistic_correlation.pdf")
-	c4.SaveAs(figures_folder+ "binary_logistic_correlation.pdf")
-	c5.SaveAs(figures_folder+ "linear_correlation.pdf")
+	c0.SaveAs(figures_folder+ "forest_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+"_"+PageLoaded+"_"+WidgetViewed+ ".pdf")
+	c1.SaveAs(figures_folder+ "lasso_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
+	c2.SaveAs(figures_folder+ "elastic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
+	c3.SaveAs(figures_folder+ "logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
+	c4.SaveAs(figures_folder+ "binary_logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
+	c5.SaveAs(figures_folder+ "linear_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
 
-	summary_scoring_metrics = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores  ]
-	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ '.txt', 'w')
-#	with open(figures_folder+"validation_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ ".csv", 'wb') as csvfile:
-
+#	summary_scoring_metrics = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores  ]
+	summary_scoring_metrics = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores  ]
+	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF) +"_"+PageLoaded+"_"+WidgetViewed+'.txt', 'w')
 	for i in range(len(summary_scoring_metrics)):
-	#	score_metrics.write(summary_scoring_metrics[i][2])
-		score_metrics.write(summary_scoring_metrics[i][0])
-	#	score_metrics.write(summary_scoring_metrics[i][1])
-		print summary_scoring_metrics[i][2]
-		print summary_scoring_metrics[i][0]
-		print summary_scoring_metrics[i][1]
-		plt.figure()
-		plt.plot(np.arange(0,len(summary_scoring_metrics[i][0]),1), summary_scoring_metrics[i][0], 'ro', markersize=10 )
-		plt.title(summary_scoring_metrics[i][2])
-		plt.xlabel("K-Fold")
-		plt.ylabel("Score")
-		plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] +'.pdf') 
+		try:
+			print summary_scoring_metrics[i]
+			score_metrics.write(summary_scoring_metrics[i][0])
+			print summary_scoring_metrics[i][2]
+			print summary_scoring_metrics[i][0]
+			print summary_scoring_metrics[i][1]
+			plt.figure()
+			plt.title(summary_scoring_metrics[i][2])
+			plt.xlabel("K-Fold")
+			plt.ylabel("Score")
+			plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] + "_" + str(Min_DF)  +"_"+PageLoaded+"_"+WidgetViewed +'.pdf') 
+		except: continue
 	score_metrics.close()
 	word_priority = []
 	print len(list_of_features)
@@ -116,21 +117,19 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 
 	for i in range(len(list_of_features)):
+#		word_priority_list = [list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], 
 		word_priority_list = [list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], 
-					logistic_results_parameters[2][0][i], binary_x_logistic_results_parameters[2][0][i], forest_results_parameters[2][i],0] 
-		#print "%s,%.3g,%.3g,%.3g,%.3g,%.3g" % (list_of_features[i], lasso_results_parameters[3][i], elastic_results_parameters[3][i], logistic_results_parameters[2][0][i],  binary_x_logistic_results_parameters[2][0][i], forest_results_parameters[2][i])
-
+					logistic_results_parameters[2][0][i], 0, 0] 
 
 		word_priority.append(word_priority_list)
-	#	print "b_lasso:%.2g, b_elastic_net:%.2g, b_logistic:%.2g, word:%s" % (coef_path_lasso_cv.coef_[i], coef_path_elastic_cv.coef_[i], coef_path_logistic_cv.coef_[0][i], list_of_features[i])
 
 	#print word_priority
 
 	word_priority_lasso = sorted (word_priority, key= lambda x: float(x[1]), reverse=True)
 	word_priority_elastic = sorted (word_priority, key= lambda x: float(x[2]), reverse=True)
 	word_priority_logistic = sorted (word_priority, key= lambda x: float(x[3]), reverse=True)
-	word_priority_binary_logistic = sorted (word_priority, key= lambda x: float(x[4]), reverse=True)
-	word_priority_forest = sorted (word_priority, key= lambda x: float(x[5]), reverse=True)
+	#word_priority_binary_logistic = sorted (word_priority, key= lambda x: float(x[4]), reverse=True)
+#	word_priority_forest = sorted (word_priority, key= lambda x: float(x[5]), reverse=True)
 	word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
 	#word_priority_linear = sorted (word_priority, key= lambda x: float(x[6]), reverse=True)
 
@@ -150,15 +149,14 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 			ranked_key_words_list = [word_priority_lasso[i][1], word_priority_lasso[i][0],
 			word_priority_elastic[i][2], word_priority_elastic[i][0],
 			word_priority_logistic[i][3], word_priority_logistic[i][0],
-			word_priority_binary_logistic[i][4], word_priority_binary_logistic[i][0],
-			word_priority_forest[i][5], word_priority_forest[i][0],
+			0,0,0,0,
 			0, 0]
 		ranked_key_words.append(ranked_key_words_list)
 	#	print ranked_key_words[i]
 
 	ranked_words_header = [["lasso rank"],["lasso word"],["elastic rank"],["elastic word"],["logistic rank"],["logistic word"],["b-logistic rank"],["b-logistic word"],["forest rank"],["forest word"],["linear rank"],["linear word"]]
-	#ranked_words_header = ["lasso rank","lasso word","elastic rank","elastic word","logistic rank","logistic word","b-logistic rank","b-logistic word","forest rank","forest word"]
-	with open(figures_folder+"ranked_words_ngram_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ ".csv", 'wb') as csvfile:
+	
+	with open(figures_folder+"ranked_words_ngram_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".csv", 'wb') as csvfile:
 	    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
 	    spamwriter.writerow(ranked_words_header)
 	    for i in range(len(ranked_key_words)):

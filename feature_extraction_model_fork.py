@@ -12,8 +12,6 @@ from sklearn.metrics import *
 
 from sklearn import cross_validation, datasets, linear_model
 from sklearn.feature_extraction import text 
-from sklearn.utils import resample
-
 
 import sys
 import matplotlib.pyplot as plt
@@ -55,20 +53,10 @@ Alphas=[0]
 Tol=0.001
 Min_DF=float(sys.argv[4])
 
-N_Estimators=1000
-DSampling=False
+N_Estimators=10
 
-PageLoaded = int(sys.argv[5])
-WidgetViewed = int(sys.argv[6])
+corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection)
 
-print "%s, %s, %s, %s, %s, %s" % (widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed)
-corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection, PageLoaded, WidgetViewed)
-
-##DOWNSAMPLING TEST
-
-
-#for i in range(len(engagement_rate)):
-#	print engagement_rate[i]
 my_words = ["considering","proper","agree", "soon", "changing", "wish", "flickr", "protect","including", "example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"]#, "improve wisegeek", "related article", "u'improve wisegeek"]
 
 my_stop_words = text.ENGLISH_STOP_WORDS.union(my_words)
@@ -81,58 +69,59 @@ vectorizer = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), dec
 vectorizer_binary = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
 			ngram_range=(Ngram_Range_Low,Ngram_Range_High), binary="True",  min_df=Min_DF)#, max_df=0.85)
 
+vectorizer_unigram = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
+				ngram_range=(1,1),  min_df=Min_DF)#, max_df=0.85)
+
+vectorizer_bigram = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
+				ngram_range=(2,2),  min_df=Min_DF)#, max_df=0.85)
+
+X_unigram = vectorizer_unigram.fit_transform(corpus)
+X_bigram = vectorizer_bigram.fit_transform(corpus)
+
+X_unigram = vectorizer_unigram.fit_transform(corpus)
+X_bigram = vectorizer_bigram.fit_transform(corpus)
+
+number_of_features_unigram = len(vectorizer_unigram.get_feature_names())
+list_of_features_unigram = vectorizer_unigram.get_feature_names()
+
+number_of_features_bigram = len(vectorizer_bigram.get_feature_names())
+list_of_features_bigram = vectorizer_bigram.get_feature_names()
+
 X = vectorizer.fit_transform(corpus)
 
-corpus_array = X.toarray()
-#######DOWNSAMPLING BEGIN############
-print "number of zeros:%d" % engagement_rate.count(0)
-print "total number of engagements:%d" % len(engagement_rate)
-training_matrix = np.array(corpus_array)
-engagement_matrix = np.array(engagement_rate)
-print "training matrix:%d, engagement matrix:%d" % (len(training_matrix), len(engagement_matrix))
-#print training_matrix
-#print engagement_matrix
-total_matrix =  np.column_stack((training_matrix, engagement_matrix))
-matrix_of_zeros = []
-matrix_of_nonzeros = []
-
-for i in range(len(total_matrix)):
-	if total_matrix[i][len(total_matrix[i])-1]>0:
-		matrix_of_nonzeros.append(total_matrix[i])
-	else: matrix_of_zeros.append(total_matrix[i])
-
-#print matrix_of_zeros
-
-#print matrix_of_nonzeros
-if DSampling==True:
-	target_downsampling = 0.50;
-	downsampling=int(np.round((len(matrix_of_nonzeros)/target_downsampling)*(1-target_downsampling)))
-	#print downsampling
-	downsampled_nonzeros=resample(matrix_of_zeros, n_samples=downsampling, random_state=0, replace = False)
-
-	print len(downsampled_nonzeros)
-	#print downsampled_nonzeros
-
-	downsampled_total = np.concatenate((downsampled_nonzeros,matrix_of_nonzeros))
-#print matrix_of_nonzeros
-	downsampled_engagement = downsampled_total[:,(len(downsampled_total[0])-1):(len(downsampled_total[0]))]
-#print "downsampled engagement %s: " % downsampled_engagement
-	downsampled_training = downsampled_total[:,:-1]
-	#print downsampled_training
-	#print downsampled_training.shape
-	corpus_array = downsampled_training
-#######DOWNSAMPLING END############
+#corpus_array = X.toarray()
 number_of_features = len(vectorizer.get_feature_names())
 list_of_features = vectorizer.get_feature_names()
-print "number of features :%d" % number_of_features
+number_of_features = number_of_features_unigram + number_of_features_bigram
+list_of_features = list_of_features_unigram + list_of_features_bigram
+print "list_of_features:"
+print list_of_features
+
+print "list of features:%d" % number_of_features
+print "#######vectorizer stop words############"
+print vectorizer.get_stop_words()
 print "#######vocabulary########"
-#print vectorizer.vocabulary_
+print vectorizer.vocabulary_
+transformer_unigram = TfidfTransformer(norm='', smooth_idf=True)
+transformer_bigram = TfidfTransformer(norm='', smooth_idf=True)
 
-
-transformer = TfidfTransformer()
-tfidf = transformer.fit_transform(corpus_array)
+transformer = TfidfTransformer(norm='', smooth_idf=True)
+tfidf = transformer.fit_transform(X.toarray())
 
 tfidf_array = tfidf.toarray()
+
+tfidf_unigram = TfidfTransformer(norm='', smooth_idf=True)
+tfidf_bigram = TfidfTransformer(norm='', smooth_idf=True)
+
+tfidf_unigram_array = tfidf_unigram.fit_transform(X_unigram)
+tfidf_bigram_array = tfidf_bigram.fit_transform(X_bigram)
+
+tfidf_unigram_array = tfidf_unigram_array.toarray()
+tfidf_bigram_array = tfidf_bigram_array.toarray()
+print "############"
+print tfidf_unigram_array
+print "############"
+print tfidf_bigram_array
 
 #print tfidf_array
 
@@ -140,23 +129,16 @@ tfidf_array = tfidf.toarray()
 #print tfidf_array.shape
 
 #print len(engagement_rate)
+X_unigram = np.array(tfidf_unigram_array)
+X_bigram = np.array(tfidf_bigram_array)
+X_uni_bi_gram = np.concatenate((X_unigram,X_bigram),axis=1)
+print X_uni_bi_gram
 
-
-
-X = np.array(tfidf_array)
+#X = np.array(tfidf_array)
+X = X_uni_bi_gram
 y = np.array(engagement_rate)
+print X
 
-if DSampling==True: 
-	temp_y = []
-	for i in range(len(downsampled_engagement)):
-#		print downsampled_engagement[i][0]
-		temp_y.append(downsampled_engagement[i][0])	
-#y = downsampled_engagement
-
-	y = np.array(temp_y)
-print "data points of training set:%d" % len(X)
-print "data points of target set:%d" % len(y)
-#print y
 binary_y_pre = []
 
 for i in range(len(y)):
@@ -168,30 +150,25 @@ coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Int
 coef_path_lasso_cv = LassoCV(normalize=Normalize, max_iter=Max_Iter, copy_X=True, cv=CV, verbose=Verbose, fit_intercept=Fit_Intercept, tol=Tol)#, alphas=Alphas) 
 coef_path_elastic_cv = ElasticNetCV(normalize=Normalize,max_iter=Max_Iter, tol=Tol)#,alphas=Alphas)
 coef_path_logistic_cv = LogisticRegression( tol=Tol)
-#coef_path_binary_x_logistic_cv = LogisticRegression( tol=Tol)
-coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features='auto')
+coef_path_binary_x_logistic_cv = LogisticRegression( tol=Tol)
+coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features=number_of_features)
 
-#if DSampling==True: binary_X = vectorizer_binary.fit_transform(downsampled_training)
-
-#else: binary_X = vectorizer_binary.fit_transform(corpus)
-#coef_path_forest_cv.fit(X,binary_y)
+binary_X = vectorizer_binary.fit_transform(corpus)
+coef_path_forest_cv.fit(X,binary_y)
 coef_path_lasso_cv.fit(X,y)
-#coef_path_binary_x_logistic_cv.fit(binary_X,binary_y)
+coef_path_binary_x_logistic_cv.fit(binary_X,binary_y)
 coef_path_logistic_cv.fit(X,binary_y)
 coef_path_elastic_cv.fit(X,y)
 
-#forest_cv_score = cross_validation.cross_val_score(coef_path_forest_cv, X, binary_y, n_jobs=2, cv=CV, scoring='f1')
-print "before lassso X:%d" % len(X)
-#print X
-print "before lassso y:%d" % len(y)
+forest_cv_score = cross_validation.cross_val_score(coef_path_forest_cv, X, binary_y, n_jobs=2, cv=CV, scoring='roc_auc')
 lasso_cv_score = cross_validation.cross_val_score(coef_path_lasso_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
 elastic_cv_score = cross_validation.cross_val_score(coef_path_elastic_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
-logistic_cv_score = cross_validation.cross_val_score(coef_path_logistic_cv, X, binary_y, n_jobs=2, cv=CV, scoring='f1')
-#binary_x_logistic_cv_score = cross_validation.cross_val_score(coef_path_binary_x_logistic_cv, binary_X, binary_y, n_jobs=2, cv=CV, scoring='f1')
+logistic_cv_score = cross_validation.cross_val_score(coef_path_logistic_cv, X, binary_y, n_jobs=2, cv=CV, scoring='roc_auc')
+binary_x_logistic_cv_score = cross_validation.cross_val_score(coef_path_binary_x_logistic_cv, binary_X, binary_y, n_jobs=2, cv=CV, scoring='roc_auc')
 
-#forest_results_parameters = [ coef_path_forest_cv.predict(X), coef_path_forest_cv.get_params, coef_path_forest_cv.feature_importances_, 
-#				coef_path_forest_cv.classes_, coef_path_forest_cv.n_classes_]
-#forest_scores = [forest_cv_score, classification_report(binary_y, forest_results_parameters[0]), 'forest']
+forest_results_parameters = [ coef_path_forest_cv.predict(X), coef_path_forest_cv.get_params, coef_path_forest_cv.feature_importances_, 
+				coef_path_forest_cv.classes_, coef_path_forest_cv.n_classes_]
+forest_scores = [forest_cv_score, classification_report(binary_y, forest_results_parameters[0]), 'forest']
 
 lasso_results_parameters = [coef_path_lasso_cv.predict(X), coef_path_lasso_cv.get_params, coef_path_lasso_cv.alphas_, coef_path_lasso_cv.coef_]  
 
@@ -205,9 +182,9 @@ logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logis
 
 logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic']
 
-#binary_x_logistic_results_parameters = [coef_path_binary_x_logistic_cv.predict(X), coef_path_binary_x_logistic_cv.get_params, coef_path_binary_x_logistic_cv.coef_]
+binary_x_logistic_results_parameters = [coef_path_binary_x_logistic_cv.predict(X), coef_path_binary_x_logistic_cv.get_params, coef_path_binary_x_logistic_cv.coef_]
 
-#binary_x_logistic_scores = [binary_x_logistic_cv_score, classification_report(binary_y, binary_x_logistic_results_parameters[0]), 'binary_logistic']
+binary_x_logistic_scores = [binary_x_logistic_cv_score, classification_report(binary_y, binary_x_logistic_results_parameters[0]), 'binary_logistic']
 
 ##LINEAR REGRESSION METHOD BEGIN
 reduced_feature_matrix_logistic = []
@@ -244,12 +221,9 @@ for i in range(len(coef_path_linear_cv.coef_)):
 
 #word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
 
-#model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, binary_x_logistic_results_parameters, linear_results_parameters]
+model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, binary_x_logistic_results_parameters, linear_results_parameters]
 
-#model_scores = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores]
+model_scores = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores]
 
-model_results = [0, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, 0, linear_results_parameters]
-
-model_scores = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores]
-post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed)
+post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, Ngram_Range_Low, Ngram_Range_High)
 
