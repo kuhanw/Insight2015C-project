@@ -5,14 +5,14 @@
 #python feature_extraction_model.py assetallocationcalculator 1 1
 #python feature_extraction_model.py careercalculator 1 1
 
-for j in 5 10 
+for j in 5 15
 do
-for i in 2
+for i in 2 
 do
-python feature_extraction_model.py budgetcalculator 1 $i 0.02 $j 1 -b
-python feature_extraction_model.py homeaffordability 1 $i 0.02 $j 1  -b
-python feature_extraction_model.py assetallocationcalculator 1 $i 0.02 $j 1  -b
-python feature_extraction_model.py careercalculator 1 $i 0.02 $j 1  -b
+python feature_extraction_model.py budgetcalculator 1 $i 0.01 $j 1 -b
+python feature_extraction_model.py homeaffordability 1 $i 0.01 $j 1  -b
+python feature_extraction_model.py assetallocationcalculator 1 $i 0.01 $j 1  -b
+python feature_extraction_model.py careercalculator 1 $i 0.01 $j 1  -b
 
 python feature_extraction_model.py budgetcalculator 1 $i 0.05 $j 1  -b
 python feature_extraction_model.py homeaffordability 1 $i 0.05 $j 1  -b

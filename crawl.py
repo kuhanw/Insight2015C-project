@@ -22,10 +22,10 @@ def url_pull(url_string):
 
 start_urls = [[],[],[],[],[],[]]
 
+#data_set = "data_set_1"
 data_set = "data_set_2"
 
-#source_csv = "one_rank_correlation_v10.csv"
-source_csv = 'one_rank_correlation_v10_'+data_set+'.csv'
+source_csv = 'one_rank_correlation_v12_'+data_set+'.csv'
 
 with open(source_csv) as correlation_list:
         for line in correlation_list:
@@ -40,12 +40,10 @@ with open(source_csv) as correlation_list:
 		start_urls[5].append(str(line.split(",")[5]))
 #		except: continue
 print "#####"
-#print start_urls
-
 
 print len(start_urls) 
 
-with open('web_text_v10c_' + data_set + '.json', "w") as outfile:
+with open('web_text_v12_' + data_set + '.json', "w") as outfile:
 	for i in range(len(start_urls[0])):
 		try: 
 			url_result = url_pull(start_urls[0][i])

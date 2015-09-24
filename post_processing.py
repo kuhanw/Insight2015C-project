@@ -106,17 +106,17 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	for i in range(len(summary_scoring_metrics)):
 		#try:
 		if i==0 or i==4: continue
-		print summary_scoring_metrics[i]
-		score_metrics.write(summary_scoring_metrics[i][0])
-		print summary_scoring_metrics[i][2]
-		print summary_scoring_metrics[i][0]
-		print summary_scoring_metrics[i][1]
-		plt.figure()
-		plt.title(summary_scoring_metrics[i][2])
-		plt.xlabel("K-Fold")
-		plt.ylabel("Score")
-		plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] + "_" + str(Min_DF)  +"_"+PageLoaded+"_"+WidgetViewed +'.pdf') 
-		#except: continue
+		else:
+	#		print summary_scoring_metrics[i]
+			score_metrics.write(str(summary_scoring_metrics[i][2]) + "," + str(summary_scoring_metrics[i][0]) + "," + str(summary_scoring_metrics[i][1])+ "\n" )
+			print summary_scoring_metrics[i][0]
+			plt.figure()
+			plt.plot(np.arange(0,len(summary_scoring_metrics[i][0]),1), summary_scoring_metrics[i][0],'ro', markersize=10)
+			plt.title(summary_scoring_metrics[i][2])
+			plt.xlabel("K-Fold")
+			plt.ylabel("Score")
+			plt.savefig(figures_folder+'k_fold_cv_ngram_'+ str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+'_model_' + summary_scoring_metrics[i][2] + "_" + str(Min_DF)  +"_"+PageLoaded+"_"+WidgetViewed +'.pdf') 
+
 	score_metrics.close()
 	word_priority = []
 	print len(list_of_features)
