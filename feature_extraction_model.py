@@ -72,6 +72,7 @@ DSampling_Rate=0.50
 
 PageLoaded = int(sys.argv[5])
 WidgetViewed = int(sys.argv[6])
+ite = int(sys.argv[7])
 
 Test_Size=0.50
 RSeed=1231
@@ -239,11 +240,11 @@ logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logis
 
 logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic']
 
-print coef_path_logistic_cv.predict(x_test)
+#print coef_path_logistic_cv.predict(x_test)
 
 print "#######"
 
-print y_test
+#print y_test
 
 ##LINEAR REGRESSION METHOD BEGIN
 reduced_feature_matrix_logistic = []
@@ -282,5 +283,6 @@ model_results = [0, lasso_results_parameters, elastic_results_parameters, logist
 
 model_scores = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores]
 
-post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed)
+post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, 
+		Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite)
 

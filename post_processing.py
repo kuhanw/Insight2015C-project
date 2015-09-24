@@ -11,7 +11,8 @@ from sklearn.metrics import f1_score
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
 
-def post_processing(model_results, model_scores, training_set, target, widget, list_of_features, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed):
+def post_processing(model_results, model_scores, training_set, target, widget, list_of_features, 
+			Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite):
 
 	PageLoaded = str(PageLoaded)
 	WidgetViewed = str(WidgetViewed)	
@@ -37,18 +38,6 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	binary_x_logistic_scores = model_scores[4]
 	linear_scores = model_scores[5]
 
-	print logistic_results_parameters[3]
-
-	print "###"
-
-	print logistic_results_parameters[4]
-
-	print f1_score(logistic_results_parameters[4], logistic_results_parameters[3])
-
-	print confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3])
-
-        print(classification_report(logistic_results_parameters[4], logistic_results_parameters[3]))
-	
 	linear_word_results = []
 
 	for i in range(len(linear_results_parameters[2])):
@@ -111,16 +100,32 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	c3.SaveAs(figures_folder+ "logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
 	c4.SaveAs(figures_folder+ "binary_logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
 	c5.SaveAs(figures_folder+ "linear_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
+	#print logistic_results_parameters[3]
+
+	#print logistic_results_parameters[4]
+
+#	print f1_score(logistic_results_parameters[4], logistic_results_parameters[3])
+
+#	print confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3])
+
+#        print(classification_report(logistic_results_parameters[4], logistic_results_parameters[3]))
 
 #	summary_scoring_metrics = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores  ]
 	summary_scoring_metrics = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores  ]
-	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF) +"_"+PageLoaded+"_"+WidgetViewed+'.txt', 'w')
+	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)
+				 +"_"+PageLoaded+"_"+WidgetViewed+'_iteration'+ite+'.txt', 'w')
 	for i in range(len(summary_scoring_metrics)):
 		#try:
 		if i==0 or i==4: continue
 		else:
 	#		print summary_scoring_metrics[i]
 			score_metrics.write(str(summary_scoring_metrics[i][2]) + "," + str(summary_scoring_metrics[i][0]) + "," + str(summary_scoring_metrics[i][1])+ "\n" )
+			if i==3: score_metrics.write("Test f1:%.5g, classification_report %s:" % (f1_score(logistic_results_parameters[4], 
+						logistic_results_parameters[3]), classification_report(logistic_results_parameters[4], 
+						logistic_results_parameters[3])))
+			print "Test f1:%.5g, classification_report %s:" % (f1_score(logistic_results_parameters[4],
+                                                logistic_results_parameters[3]), classification_report(logistic_results_parameters[4],
+                                                logistic_results_parameters[3]))
 			print summary_scoring_metrics[i][0]
 			plt.figure()
 			plt.plot(np.arange(0,len(summary_scoring_metrics[i][0]),1), summary_scoring_metrics[i][0],'ro', markersize=10)
