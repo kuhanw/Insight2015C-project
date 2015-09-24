@@ -1,12 +1,12 @@
 import ROOT
 import csv
 
-import nltk
-from nltk import word_tokenize
-from nltk.stem.porter import PorterStemmer
-from nltk.stem import WordNetLemmatizer
 import matplotlib.pyplot as plt
 import numpy as np
+
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
@@ -37,6 +37,18 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	binary_x_logistic_scores = model_scores[4]
 	linear_scores = model_scores[5]
 
+	print logistic_results_parameters[3]
+
+	print "###"
+
+	print logistic_results_parameters[4]
+
+	print f1_score(logistic_results_parameters[4], logistic_results_parameters[3])
+
+	print confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3])
+
+        print(classification_report(logistic_results_parameters[4], logistic_results_parameters[3]))
+	
 	linear_word_results = []
 
 	for i in range(len(linear_results_parameters[2])):

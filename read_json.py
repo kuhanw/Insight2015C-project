@@ -20,8 +20,6 @@ def replace_bigrams(input_paragraph):
         return output_paragraph
 
 def read_json(json_file, widget, page_loaded_cut, widget_viewed_cut):
-#	json_file = "web_text_v9c.json"
-	json_file = "web_text_v12_data_set_1.json"
 	corpus = []
 	engagement_rate = []
 	page_stats = [[], [] ,[], []]

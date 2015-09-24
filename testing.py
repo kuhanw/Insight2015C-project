@@ -13,8 +13,6 @@ from sklearn.metrics import *
 from sklearn import cross_validation, datasets, linear_model
 from sklearn.feature_extraction import text 
 from sklearn.utils import resample
-from sklearn.cross_validation import train_test_split
-
 
 import sys
 import matplotlib.pyplot as plt
@@ -29,16 +27,6 @@ import ROOT
 
 ROOT.gStyle.SetOptStat(11111)
 ROOT.gStyle.SetPalette(1)
-
-def make_binary(y):
-
-	binary_y_pre = []
-
-	for i in range(len(y)):
-		if y[i]>0: binary_y_pre.append(1)
-		else: binary_y_pre.append(0)
-
-	return binary_y_pre
 
 #Widget selection
 widget_selection = sys.argv[1]
@@ -73,39 +61,34 @@ DSampling_Rate=0.50
 PageLoaded = int(sys.argv[5])
 WidgetViewed = int(sys.argv[6])
 
-Test_Size=0.50
-RSeed=1231
-
-input_json = "web_text_v12_data_set_1_2.json"
-
 print "%s, %s, %s, %s, %s, %s" % (widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed)
-corpus, engagement_rate, page_stats = read_json(input_json, widget_selection, PageLoaded, WidgetViewed)
+corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection, PageLoaded, WidgetViewed)
 
-#ADDITIONAL STOPWORDS
-my_words = ["considering","proper","agree", "soon", "changing", "wish", "flickr", "protect","including", 
-		"example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"] 
+##DOWNSAMPLING TEST
+
+
+#for i in range(len(engagement_rate)):
+#	print engagement_rate[i]
+my_words = ["considering","proper","agree", "soon", "changing", "wish", "flickr", "protect","including", "example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"]#, "improve wisegeek", "related article", "u'improve wisegeek"]
 
 my_stop_words = text.ENGLISH_STOP_WORDS.union(my_words)
 
 #build vocabulary matrix
 print "size of corpus:%d" % len(corpus)
-print "size of corpus target:%d" % len(engagement_rate)
 
 vectorizer = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
 				ngram_range=(Ngram_Range_Low,Ngram_Range_High),  min_df=Min_DF)#, max_df=0.85)
+vectorizer_binary = CountVectorizer(analyzer="word", stop_words=set(my_stop_words), decode_error=Decode_Error, 
+			ngram_range=(Ngram_Range_Low,Ngram_Range_High), binary="True",  min_df=Min_DF)#, max_df=0.85)
 
 X = vectorizer.fit_transform(corpus)
 
 corpus_array = X.toarray()
-
+#######DOWNSAMPLING BEGIN############
 print "number of zeros:%d" % engagement_rate.count(0)
 print "total number of engagements:%d" % len(engagement_rate)
-
 zero_rate = float(engagement_rate.count(0))/float(len(engagement_rate))
-
 print "zero rate:%.3g" % zero_rate
-
-#######DOWNSAMPLING BEGIN############
 if zero_rate>(1-DSampling_Rate): DSampling=True
 
 training_matrix = np.array(corpus_array)
@@ -142,37 +125,7 @@ if DSampling==True:
 	#print downsampled_training
 	#print downsampled_training.shape
 	corpus_array = downsampled_training
-	
-	temp_y = []
-	for i in range(len(downsampled_engagement)):
-#		print downsampled_engagement[i][0]
-		temp_y.append(downsampled_engagement[i][0])	
-	engagement_rate = temp_y
 #######DOWNSAMPLING END############
-#print "QQQQQQQQQQQ"
-#print len(corpus_array)
-#print corpus_array
-#print len(engagement_rate)
-#print engagement_rate
-#print "QQQQQQQQQQQ"
-#####SPLITTING TRAINING AND TEST DATASETS BEING##########
-x_train, x_test, y_train, y_test = train_test_split(corpus_array, engagement_rate, test_size=Test_Size)#, random_state=RandomState)
-
-print x_train.shape
-print y_train.shape
-
-corpus_array = x_train
-
-engagement_rate = y_train
-
-#print X
-
-#print engagement_rate
-
-print "size of training X:%d, training y:%d, test X:%d, test y:%d" % (x_train.shape[0], y_train.shape[0], x_test.shape[0], y_test.shape[0])
-#####SPLITTING TRAINING AND TEST DATASETS END##########
-
-
 number_of_features = len(vectorizer.get_feature_names())
 list_of_features = vectorizer.get_feature_names()
 print "number of features :%d" % number_of_features
@@ -180,7 +133,6 @@ print "#######vocabulary########"
 #print vectorizer.vocabulary_
 
 
-####NORMALIZATION AND TDIDF WEIGHTING BEGIN#######
 transformer = TfidfTransformer()
 tfidf = transformer.fit_transform(corpus_array)
 
@@ -193,24 +145,42 @@ tfidf_array = tfidf.toarray()
 
 #print len(engagement_rate)
 
+
+
 X = np.array(tfidf_array)
 y = np.array(engagement_rate)
 
+if DSampling==True: 
+	temp_y = []
+	for i in range(len(downsampled_engagement)):
+#		print downsampled_engagement[i][0]
+		temp_y.append(downsampled_engagement[i][0])	
+#y = downsampled_engagement
+
+	y = np.array(temp_y)
 print "data points of training set:%d" % len(X)
 print "data points of target set:%d" % len(y)
 #print y
-########NORMALIZATION AND TDIDF WEIGHTING END#########
-binary_y = np.array(make_binary(y))
+binary_y_pre = []
+
+for i in range(len(y)):
+	if y[i]>0: binary_y_pre.append(1)
+	else: binary_y_pre.append(0)
+binary_y = np.array(binary_y_pre)
 
 coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Intercept) 
 coef_path_lasso_cv = LassoCV(normalize=Normalize, max_iter=Max_Iter, copy_X=True, cv=CV, verbose=Verbose, fit_intercept=Fit_Intercept, tol=Tol)#, alphas=Alphas) 
 coef_path_elastic_cv = ElasticNetCV(normalize=Normalize,max_iter=Max_Iter, tol=Tol)#,alphas=Alphas)
 coef_path_logistic_cv = LogisticRegression( tol=Tol)
+#coef_path_binary_x_logistic_cv = LogisticRegression( tol=Tol)
 coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features='auto')
 
+#if DSampling==True: binary_X = vectorizer_binary.fit_transform(downsampled_training)
 
+#else: binary_X = vectorizer_binary.fit_transform(corpus)
 #coef_path_forest_cv.fit(X,binary_y)
 coef_path_lasso_cv.fit(X,y)
+#coef_path_binary_x_logistic_cv.fit(binary_X,binary_y)
 coef_path_logistic_cv.fit(X,binary_y)
 coef_path_elastic_cv.fit(X,y)
 
@@ -221,6 +191,7 @@ print "before lassso y:%d" % len(y)
 lasso_cv_score = cross_validation.cross_val_score(coef_path_lasso_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
 elastic_cv_score = cross_validation.cross_val_score(coef_path_elastic_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
 logistic_cv_score = cross_validation.cross_val_score(coef_path_logistic_cv, X, binary_y, n_jobs=2, cv=CV, scoring='f1')
+#binary_x_logistic_cv_score = cross_validation.cross_val_score(coef_path_binary_x_logistic_cv, binary_X, binary_y, n_jobs=2, cv=CV, scoring='f1')
 
 #forest_results_parameters = [ coef_path_forest_cv.predict(X), coef_path_forest_cv.get_params, coef_path_forest_cv.feature_importances_, 
 #				coef_path_forest_cv.classes_, coef_path_forest_cv.n_classes_]
@@ -234,16 +205,13 @@ elastic_results_parameters = [ coef_path_elastic_cv.predict(X), coef_path_elasti
 				coef_path_elastic_cv.coef_]
 elastic_scores = [elastic_cv_score, r2_score(y,elastic_results_parameters[0]), 'elastic']
 
-logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logistic_cv.get_params, coef_path_logistic_cv.coef_, 
-				coef_path_logistic_cv.predict(x_test), np.array(make_binary(y_test))]
+logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logistic_cv.get_params, coef_path_logistic_cv.coef_]
 
 logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic']
 
-print coef_path_logistic_cv.predict(x_test)
+#binary_x_logistic_results_parameters = [coef_path_binary_x_logistic_cv.predict(X), coef_path_binary_x_logistic_cv.get_params, coef_path_binary_x_logistic_cv.coef_]
 
-print "#######"
-
-print y_test
+#binary_x_logistic_scores = [binary_x_logistic_cv_score, classification_report(binary_y, binary_x_logistic_results_parameters[0]), 'binary_logistic']
 
 ##LINEAR REGRESSION METHOD BEGIN
 reduced_feature_matrix_logistic = []
@@ -278,9 +246,14 @@ for i in range(len(coef_path_linear_cv.coef_)):
 	temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
 	linear_word_results.append(temp_list)
 
+#word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
+
+#model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, binary_x_logistic_results_parameters, linear_results_parameters]
+
+#model_scores = [forest_scores, lasso_scores, elastic_scores, logistic_scores, binary_x_logistic_scores, linear_scores]
+
 model_results = [0, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, 0, linear_results_parameters]
 
 model_scores = [0, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores]
-
 post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed)
 
