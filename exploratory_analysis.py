@@ -30,7 +30,7 @@ Decode_Error = "ignore"
 #widget_selection = "budgetcalculator"
 widget_selection = "careercalculator"
 figures_folder = "figures/"+widget_selection + "/"
-corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection)
+corpus, engagement_rate, page_stats = read_json("web_text_v9c.json",widget_selection, 0, 0)
 vectorizer = CountVectorizer(analyzer="word", stop_words="english", decode_error=Decode_Error, ngram_range=(1,1))#, min_df=0.15)
 vectorizer_bigram = CountVectorizer(analyzer="word", stop_words="english", decode_error=Decode_Error, ngram_range=(2,2))#, min_df=0.15)
 
@@ -44,7 +44,7 @@ switch=1
 
 ROOT.gStyle.SetOptStat(1111101)
 ROOT.gStyle.SetPalette(1)
-
+#ROOT.gStyle.SetStyle('Plain')
 print len(corpus_array)
 
 
@@ -74,49 +74,50 @@ for i in range(len(page_stats[0])):
 	hist_widgetviewed_pagesloaded.Fill(page_stats[1][i], page_stats[0][i])
 	hist_widgetclicked_pagesloaded.Fill(page_stats[2][i], page_stats[0][i])
 
-c_hist_engagementrate = ROOT.TCanvas("c_hist_engagementrate","c_hist_engagementrate",0,0,600,600)
+c_hist_engagementrate = ROOT.TCanvas("c_hist_engagementrate","c_hist_engagementrate",0,0,3000,2000)
 c_hist_engagementrate.SetLogy()
 hist_engagementrate.GetXaxis().SetTitle("Frequency of Engagement")
 hist_engagementrate.GetYaxis().SetTitle("Entries/0.01 bins")
 hist_engagementrate.Draw("COLZ")
-c_hist_engagementrate.SaveAs(figures_folder+ "engagementRate.pdf")
+c_hist_engagementrate.SaveAs(figures_folder+ "engagementRate.png")
 
 
-c_hist_widgetviewed_pagesloaded = ROOT.TCanvas("c_hist_widgetviewed_pagesloaded","c_hist_widgetviewed_pagesloaded",0,0,600,600)
+c_hist_widgetviewed_pagesloaded = ROOT.TCanvas("c_hist_widgetviewed_pagesloaded","c_hist_widgetviewed_pagesloaded",0,0,3000,2000)
 hist_widgetviewed_pagesloaded.GetXaxis().SetTitle("WidgetsViewed")
 hist_widgetviewed_pagesloaded.GetYaxis().SetTitle("PagesLoaded")
 hist_widgetviewed_pagesloaded.Draw("COLZ")
-c_hist_widgetviewed_pagesloaded.SaveAs(figures_folder+ "widgetViewed_pagesLoaded.pdf")
+c_hist_widgetviewed_pagesloaded.SaveAs(figures_folder+ "widgetViewed_pagesLoaded.png")
 
-c_hist_widgetclicked_pagesloaded = ROOT.TCanvas("c_hist_widgetclicked_pagesloaded","c_hist_widgetclicked_pagesloaded",0,0,600,600)
+c_hist_widgetclicked_pagesloaded = ROOT.TCanvas("c_hist_widgetclicked_pagesloaded","c_hist_widgetclicked_pagesloaded",0,0,3000,2000)
 hist_widgetclicked_pagesloaded.GetXaxis().SetTitle("WidgetsClicked")
 hist_widgetclicked_pagesloaded.GetYaxis().SetTitle("PagesLoaded")
 hist_widgetclicked_pagesloaded.Draw("COLZ")
-c_hist_widgetclicked_pagesloaded.SaveAs(figures_folder+ "widgetClicked_pagesLoaded.pdf")
+c_hist_widgetclicked_pagesloaded.SaveAs(figures_folder+ "widgetClicked_pagesLoaded.png")
 
-c_hist_pagesloaded = ROOT.TCanvas("c_hist_pagesloaded","c_hist_pagesloaded",0,0,600,600)
+c_hist_pagesloaded = ROOT.TCanvas("c_hist_pagesloaded","c_hist_pagesloaded",0,0,3000,2000)
 c_hist_pagesloaded.SetLogy()
 hist_pagesloaded.GetXaxis().SetTitle("PagesLoaded")
 hist_pagesloaded.GetYaxis().SetTitle("Entries/1 bin")
 hist_pagesloaded.Draw()
-c_hist_pagesloaded.SaveAs(figures_folder+ "pagesLoaded.pdf")
+c_hist_pagesloaded.SaveAs(figures_folder+ "pagesLoaded.png")
 
-c_hist_df = ROOT.TCanvas("c_hist_df","c_hist_df",0,0,600,600)
+c_hist_df = ROOT.TCanvas("c_hist_df","c_hist_df",0,0,3000,2000)
 c_hist_df.SetLogy()
 hist_df.GetXaxis().SetTitle("Document Feature Frequency")
 hist_df.GetYaxis().SetTitle("Features")
 hist_df.Draw()
 
-c_hist_df.SaveAs(figures_folder+ "totalDocumentFrequency.pdf")
+c_hist_df.SaveAs(figures_folder+ "totalDocumentFrequency.png")
 for i in range(100):
 	hist_int_df.SetBinContent(i,hist_df.Integral(i,100)/hist_df.Integral(0,100))		
 
-c_int_hist_df = ROOT.TCanvas("c_int_hist_df","c_int_hist_df",0,0,600,600)
+c_int_hist_df = ROOT.TCanvas("c_int_hist_df","c_int_hist_df",0,0,1500,1000)
 c_int_hist_df.SetLogy()
-hist_int_df.GetXaxis().SetTitle("Integrated Document Feature Frequency")
-hist_int_df.GetYaxis().SetTitle("Features")
+hist_int_df.SetMinimum(0.0000101)
+hist_int_df.GetXaxis().SetTitle("Feature Frequency/Documents")
+hist_int_df.GetYaxis().SetTitle("Relative Number of Documents [%]")
 hist_int_df.Draw()
-c_int_hist_df.SaveAs(figures_folder+ "totalDocumentFrequencyInt.pdf")
+c_int_hist_df.SaveAs(figures_folder+ "totalDocumentFrequencyInt2.png")
 if switch==2:
 	total_abs_word_frequency = []
 	total_corpus_array= np.sum(corpus_array,axis=0)
@@ -161,24 +162,24 @@ if switch==2:
 		for j in range(len(corpus_array[i])):
 			hist_1.Fill(corpus_array[i][j])
 
-	c0 = ROOT.TCanvas("c0","c0",0,0,600,600)
+	c0 = ROOT.TCanvas("c0","c0",0,0,3000,2000)
 	c0.SetLogy()
 	hist_1.GetYaxis().SetTitle("Unique Unigrams")
 	hist_1.GetXaxis().SetTitle("Absolute Frequency of Words")
 	hist_1.Draw()
-	c0.SaveAs(figures_folder+ "histTotalCorpusUnigram.pdf")
+	c0.SaveAs(figures_folder+ "histTotalCorpusUnigram.png")
 
 	for i in range(len(corpus_array_bigram)):
 		if i%50==0: print "%d/%d" % (i,len(corpus_array_bigram))
 		for j in range(len(corpus_array_bigram[i])):
 			hist_2.Fill(corpus_array_bigram[i][j])
 
-	c1 = ROOT.TCanvas("c1","c1",0,0,600,600)
+	c1 = ROOT.TCanvas("c1","c1",0,0,3000,2000)
 	c1.SetLogy()
 	hist_2.GetYaxis().SetTitle("Unique Bigrams")
 	hist_2.GetXaxis().SetTitle("Absolute Frequency of Words")
 	hist_2.Draw()
-	c1.SaveAs(figures_folder+ "histTotalCorpusBigram.pdf")
+	c1.SaveAs(figures_folder+ "histTotalCorpusBigram.png")
 	
 	plt.figure()
 	plt.hist(page_stats[0],np.arange(0,200,1),log="True")

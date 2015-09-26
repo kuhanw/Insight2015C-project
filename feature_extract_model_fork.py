@@ -14,7 +14,6 @@ from sklearn import cross_validation, datasets, linear_model
 from sklearn.feature_extraction import text 
 from sklearn.utils import resample
 from sklearn.cross_validation import train_test_split
-from sklearn.metrics import confusion_matrix
 
 import sys
 import matplotlib.pyplot as plt
@@ -66,7 +65,7 @@ Alphas=[0]
 Tol=0.001
 Min_DF=float(sys.argv[4])
 
-N_Estimators=100
+N_Estimators=1000
 
 DSampling=False
 DSampling_Rate=0.50
@@ -74,8 +73,6 @@ DSampling_Rate=0.50
 PageLoaded = int(sys.argv[5])
 WidgetViewed = int(sys.argv[6])
 ite = int(sys.argv[7])
-
-Scoring_2 = 'precision'
 
 RSeed=ite
 
@@ -152,13 +149,12 @@ if DSampling==True:
 	#print downsampled_training
 	#print downsampled_training.shape
 	corpus_array = downsampled_training
-		
+	
 	temp_y = []
 	for i in range(len(downsampled_engagement)):
 #		print downsampled_engagement[i][0]
 		temp_y.append(downsampled_engagement[i][0])	
 	engagement_rate = temp_y
-	print "resampled engagement length %d" % len(engagement_rate)
 #######DOWNSAMPLING END############
 #print "QQQQQQQQQQQ"
 #print len(corpus_array)
@@ -171,11 +167,6 @@ x_train, x_test, y_train, y_test = train_test_split(corpus_array, engagement_rat
 
 print x_train.shape
 print y_train.shape
-
-print "Zeroes in y_train:%d" % list(y_train).count(0)
-print "Zeroes in y_test:%d" % list(y_test).count(0)
-print "total in y_train:%d" % len(list(y_train))
-print "total in y_test:%d" % len(list(y_test))
 
 corpus_array = x_train
 
@@ -222,7 +213,7 @@ coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Int
 #coef_path_lasso_cv = LassoCV(normalize=Normalize, max_iter=Max_Iter, copy_X=True, cv=CV, verbose=Verbose, fit_intercept=Fit_Intercept, tol=Tol)#, alphas=Alphas) 
 #coef_path_elastic_cv = ElasticNetCV(normalize=Normalize,max_iter=Max_Iter, tol=Tol)#,alphas=Alphas)
 coef_path_logistic_cv = LogisticRegression(penalty='l2', tol=Tol)
-coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features='auto', random_state=ite)
+coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features='auto')
 
 
 coef_path_forest_cv.fit(X,binary_y)
@@ -230,7 +221,7 @@ coef_path_forest_cv.fit(X,binary_y)
 coef_path_logistic_cv.fit(X,binary_y)
 #coef_path_elastic_cv.fit(X,y)
 
-forest_cv_score = cross_validation.cross_val_score(coef_path_forest_cv, X, binary_y, n_jobs=2, cv=CV, scoring=Scoring_2)
+forest_cv_score = cross_validation.cross_val_score(coef_path_forest_cv, X, binary_y, n_jobs=2, cv=CV, scoring='precision')
 print "before lassso X:%d" % len(X)
 print coef_path_forest_cv.feature_importances_
 print "before lassso X:%d" % len(X)
@@ -238,7 +229,7 @@ print "before lassso X:%d" % len(X)
 print "before lassso y:%d" % len(y)
 #lasso_cv_score = cross_validation.cross_val_score(coef_path_lasso_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
 #elastic_cv_score = cross_validation.cross_val_score(coef_path_elastic_cv, X, y, n_jobs=2, cv=CV, scoring=Scoring)
-logistic_cv_score = cross_validation.cross_val_score(coef_path_logistic_cv, X, binary_y, n_jobs=2, cv=CV, scoring=Scoring_2)
+logistic_cv_score = cross_validation.cross_val_score(coef_path_logistic_cv, X, binary_y, n_jobs=2, cv=CV, scoring='precision')
 
 forest_results_parameters = [ coef_path_forest_cv.predict(X), coef_path_forest_cv.get_params, coef_path_forest_cv.feature_importances_, 
 				coef_path_forest_cv.classes_, coef_path_forest_cv.predict(x_test), np.array(make_binary(y_test))]
@@ -253,59 +244,52 @@ forest_scores = [forest_cv_score, classification_report(binary_y, forest_results
 #elastic_scores = [elastic_cv_score, r2_score(y,elastic_results_parameters[0]), 'elastic']
 
 logistic_results_parameters = [coef_path_logistic_cv.predict(X), coef_path_logistic_cv.get_params, coef_path_logistic_cv.coef_, 
-				coef_path_logistic_cv.predict(x_test), np.array(make_binary(y_test)), coef_path_logistic_cv.predict_proba(x_test)]
+				coef_path_logistic_cv.predict(x_test), np.array(make_binary(y_test))]
 
-logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic'
-				, precision_score(np.array(make_binary(y)), coef_path_logistic_cv.predict(X)), 
-				recall_score(np.array(make_binary(y)), coef_path_logistic_cv.predict(X)), 
-				accuracy_score(np.array(make_binary(y)), coef_path_logistic_cv.predict(X)),
-				confusion_matrix(np.array(make_binary(y)), coef_path_logistic_cv.predict(X))]
+logistic_scores = [logistic_cv_score, classification_report(binary_y, logistic_results_parameters[0]), 'logistic']
 print "TTTTTTTTTTTTT"
 print logistic_cv_score
 print "TTTTTTTTTTTTT"
-linear_reg=0
-if linear_reg==1:
+
 ##LINEAR REGRESSION METHOD BEGIN
-	reduced_feature_matrix_logistic = []
-	print "list of features from logistic regression:%d" % len(logistic_results_parameters[2][0])
-	print len(X[0])
-	transpose_training_X = zip(*X)
-	reduced_feature_list_logistic = []
+reduced_feature_matrix_logistic = []
+print "list of features from logistic regression:%d" % len(logistic_results_parameters[2][0])
+print len(X[0])
+transpose_training_X = zip(*X)
+reduced_feature_list_logistic = []
 
-	for i in range(len(logistic_results_parameters[2][0])):
-		if float(logistic_results_parameters[2][0][i])>0.01:
-			reduced_feature_matrix_logistic.append(transpose_training_X[i])
-			reduced_feature_list_logistic.append(list_of_features[i])
+for i in range(len(logistic_results_parameters[2][0])):
+	if float(logistic_results_parameters[2][0][i])>0.01:
+		reduced_feature_matrix_logistic.append(transpose_training_X[i])
+		reduced_feature_list_logistic.append(list_of_features[i])
 
-	print "reduced_feature_matrix_logistic before transpose:%d" % len(reduced_feature_matrix_logistic)	
-	reduced_feature_matrix_logistic = zip(*reduced_feature_matrix_logistic)
-	print "reduced_feature_matrix_logistic after transpose:%d" % len(reduced_feature_matrix_logistic)
+print "reduced_feature_matrix_logistic before transpose:%d" % len(reduced_feature_matrix_logistic)	
+reduced_feature_matrix_logistic = zip(*reduced_feature_matrix_logistic)
+print "reduced_feature_matrix_logistic after transpose:%d" % len(reduced_feature_matrix_logistic)
 
-	coef_path_linear_cv.fit(reduced_feature_matrix_logistic,y)
+coef_path_linear_cv.fit(reduced_feature_matrix_logistic,y)
 
-	linear_cv_score = cross_validation.cross_val_score(coef_path_linear_cv, reduced_feature_matrix_logistic, y, n_jobs=2, cv=CV, scoring=Scoring)
+linear_cv_score = cross_validation.cross_val_score(coef_path_linear_cv, reduced_feature_matrix_logistic, y, n_jobs=2, cv=CV, scoring=Scoring)
 
-	linear_results_parameters = [ coef_path_linear_cv.predict(reduced_feature_matrix_logistic), coef_path_linear_cv.get_params,reduced_feature_list_logistic, coef_path_linear_cv.coef_]
+linear_results_parameters = [ coef_path_linear_cv.predict(reduced_feature_matrix_logistic), coef_path_linear_cv.get_params,reduced_feature_list_logistic, coef_path_linear_cv.coef_]
 
-	linear_scores = [linear_cv_score, r2_score(y, linear_results_parameters[0]), 'linear']
+linear_scores = [linear_cv_score, r2_score(y, linear_results_parameters[0]), 'linear']
 
-	print "reduced_feature_list_logistic length:%d" % len(reduced_feature_list_logistic)
-	print "linear_coefficient length:%d" % len(coef_path_linear_cv.coef_)
-	linear_word_results = []
-
-	for i in range(len(coef_path_linear_cv.coef_)):
-		temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
-		linear_word_results.append(temp_list)
+print "reduced_feature_list_logistic length:%d" % len(reduced_feature_list_logistic)
+print "linear_coefficient length:%d" % len(coef_path_linear_cv.coef_)
+linear_word_results = []
 ###LINEAR REGRESSION END
 
-
+for i in range(len(coef_path_linear_cv.coef_)):
+	temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
+	linear_word_results.append(temp_list)
 
 #model_results = [forest_results_parameters, lasso_results_parameters, elastic_results_parameters, logistic_results_parameters, 0, linear_results_parameters]
 
 #model_scores = [forest_scores, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores]
-model_results = [forest_results_parameters, 0, 0, logistic_results_parameters, 0, 0]
+model_results = [forest_results_parameters, 0, 0, logistic_results_parameters, 0, linear_results_parameters]
 
-model_scores = [forest_scores, 0, 0, logistic_scores, 0, 0]
+model_scores = [forest_scores, 0, 0, logistic_scores, 0, linear_scores]
 
 post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, 
 		Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite)
