@@ -77,10 +77,7 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 	for i in range(len(y)):
 		hist_0.Fill(y[i]/len(y),forest_results_parameters[0][i]/len(y))
-#		hist_1.Fill(y[i]/len(y),lasso_results_parameters[0][i]/len(y))
-		#hist_2.Fill(y[i]/len(y),elastic_results_parameters[0][i]/len(y))
 		hist_3.Fill(y[i]/len(y),logistic_results_parameters[0][i]/len(y))
-		#hist_4.Fill(y[i],binary_x_logistic_results_parameters[0][i])
 #		hist_5.Fill(y[i]/len(y),linear_results_parameters[0][i]/len(y))
 
 
@@ -120,22 +117,11 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	c3.SaveAs(figures_folder+ "logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
 	c4.SaveAs(figures_folder+ "binary_logistic_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
 	c5.SaveAs(figures_folder+ "linear_correlation"+str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+".pdf")
-	#print logistic_results_parameters[3]
 
-	#print logistic_results_parameters[4]
-
-#	print f1_score(logistic_results_parameters[4], logistic_results_parameters[3])
-
-#	print confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3])
-
-#        print(classification_report(logistic_results_parameters[4], logistic_results_parameters[3]))
-
-#	summary_scoring_metrics = [forest_scores, lasso_scores, elastic_scores, logistic_scores, 0, linear_scores  ]
 	summary_scoring_metrics = [forest_scores, 0, 0, logistic_scores, 0, 0  ]
 	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF)
 				 +"_"+PageLoaded+"_"+WidgetViewed+'_iteration'+str(ite)+'.txt', 'w')
 	for i in range(len(summary_scoring_metrics)):
-		#try:
 		if i==4 or i==2 or i==1 or i==5: continue
 		else:
 			if i==0: print 'FOREST'
@@ -152,18 +138,12 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 						+'\n' )
 			else: score_metrics.write(str(summary_scoring_metrics[i][2]) + "," + str(summary_scoring_metrics[i][0]) + ",\n" )
 			if i==0 : 
-		       		score_metrics.write("Test Precision :%.5g, \n" % (recall_score(forest_results_parameters[5], forest_results_parameters[4])))#
-						#classification_report(forest_results_parameters[5], 
-		#				forest_results_parameters[4])))
-#				score_metrics.write("Test f1:%.5g \n classification_report %s: \n" % (f1_score(forest_results_parameters[5], 
-	#					forest_results_parameters[4]), classification_report(forest_results_parameters[5], 
-		#				forest_results_parameters[4])))
-	#			 print "Test f1:%.5g \n classification_report %s: \n" % (f1_score(forest_results_parameters[5],
-        #                                        forest_results_parameters[4]), classification_report(forest_results_parameters[5],
-        #                                        forest_results_parameters[4]))
+				try: score_metrics.write("Test Precision :%.5g, \n" % (recall_score(forest_results_parameters[5], forest_results_parameters[4])))#
+				except: continue
 			if i==3 :
-				conf_matrix = confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3]) 
-				score_metrics.write("Test Precision :%.5g, Recall :%.5g, Accuracy :%.5g, Confusion:%d,%d,%d,%d,\n:" % (
+				try: 
+					conf_matrix = confusion_matrix(logistic_results_parameters[4], logistic_results_parameters[3]) 
+					score_metrics.write("Test Precision :%.5g, Recall :%.5g, Accuracy :%.5g, Confusion:%d,%d,%d,%d,\n:" % (
 						precision_score(logistic_results_parameters[4], logistic_results_parameters[3])
 						,recall_score(logistic_results_parameters[4], logistic_results_parameters[3])
 						,accuracy_score(logistic_results_parameters[4], logistic_results_parameters[3])
@@ -173,13 +153,7 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 						,conf_matrix[1][1]
 						)
 						)
-						#
-		#		score_metrics.write("Test f1:%.5g \n classification_report %s: \n" % (f1_score(logistic_results_parameters[4], 
-		#				logistic_results_parameters[3]), classification_report(logistic_results_parameters[4], 
-		#				logistic_results_parameters[3])))
-	#			print "Test f1:%.5g \n classification_report %s: \n" % (f1_score(logistic_results_parameters[4],
-        #                                        logistic_results_parameters[3]), classification_report(logistic_results_parameters[4],
-        #                                        logistic_results_parameters[3]))
+				except: continue
 			print summary_scoring_metrics[i][0]
 			score_metrics.write('@@@@@@@ \n')
 			plt.figure()
@@ -206,38 +180,22 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 		word_priority.append(word_priority_list)
 
-	#print word_priority
-
-	word_priority_lasso = sorted (word_priority, key= lambda x: float(x[1]), reverse=True)
-#	word_priority_elastic = sorted (word_priority, key= lambda x: float(x[2]), reverse=True)
 	word_priority_logistic = sorted (word_priority, key= lambda x: float(x[3]), reverse=True)
-	#word_priority_binary_logistic = sorted (word_priority, key= lambda x: float(x[4]), reverse=True)
 	word_priority_forest = sorted (word_priority, key= lambda x: float(x[5]), reverse=True)
-#	word_priority_linear = sorted (linear_word_results, key= lambda x: float(x[1]), reverse=True)
 
 	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 	ranked_key_words = []
 
-	for i in range(len(word_priority_lasso)):
-		try:
-			ranked_key_words_list = [
-			0, 0,
-			0, 0,
-			word_priority_logistic[i][3], word_priority_logistic[i][0],
-			word_priority_binary_logistic[i][4], word_priority_binary_logistic[i][0],
-			word_priority_forest[i][5], word_priority_forest[i][0],
-			0, 0]
-		except:
-			ranked_key_words_list = [
-			0, 0,
-			0, 0,
-			word_priority_logistic[i][3], word_priority_logistic[i][0],
-			0,0,
-			word_priority_forest[i][5], word_priority_forest[i][0],
-			0, 0]
+	for i in range(len(word_priority_logistic)):
+		ranked_key_words_list = [
+		0, 0,
+		0, 0,
+		word_priority_logistic[i][3], word_priority_logistic[i][0],
+		0,0,
+		word_priority_forest[i][5], word_priority_forest[i][0],
+		0, 0]
 		ranked_key_words.append(ranked_key_words_list)
-	#	print ranked_key_words[i]
 
 	ranked_words_header = [["lasso rank"],["lasso word"],["elastic rank"],["elastic word"],["logistic rank"],["logistic word"],["b-logistic rank"],["b-logistic word"],["forest rank"],["forest word"],["linear rank"],["linear word"]]
 	

@@ -29,22 +29,22 @@ def read_json(json_file, widget, page_loaded_cut, widget_viewed_cut):
 	        text_data = '[' + re.sub(r'\}\s\{', '},{', text_data) + ']'
   	 	json_data = json.loads(text_data)
 
-	for line in range(len(json_data)):
-		if json_data[line]["pageloaded"]<page_loaded_cut: continue 
-		if json_data[line]["widgetviewed"]<widget_viewed_cut: continue 
-    		if widget not in str(json_data[line]["type"]): continue
-     		#print "url:%s, type:%s" % (str(json_data[line]["title"]), str(json_data[line]["type"]))
-     		if json_data[line]["widgetviewed"]!=0: engagement_rate.append(json_data[line]["widgetused"]/json_data[line]["widgetviewed"])
-        	else: engagement_rate.append(0)
-        	join_body="".join(json_data[line]["body"])
-      	        #print "######"
-		#print replace_bigrams(join_body)
-      	        #print "######"
-        	corpus.append(replace_bigrams(join_body))
-        	page_stats[0].append(json_data[line]["pageloaded"])
-        	page_stats[1].append(json_data[line]["widgetviewed"])
-        	page_stats[2].append(json_data[line]["widgetused"])
-        	page_stats[3].append(str(json_data[line]["title"]))
-
+	with open("body_text_" + widget + ".txt", 'wb') as txtfile:
+		for line in range(len(json_data)):
+			if json_data[line]["pageloaded"]<page_loaded_cut: continue 
+			if json_data[line]["widgetviewed"]<widget_viewed_cut: continue 
+    			if widget not in str(json_data[line]["type"]): continue
+     			print "url:%s, type:%s" % (str(json_data[line]["title"]), str(json_data[line]["type"]))
+     			if json_data[line]["widgetviewed"]!=0: engagement_rate.append(json_data[line]["widgetused"]/json_data[line]["widgetviewed"])
+        		else: engagement_rate.append(0)
+        		join_body="".join(json_data[line]["body"])
+			pruned_body = replace_bigrams(join_body)
+        		corpus.append(pruned_body)
+        		txtfile.write(pruned_body)
+        		page_stats[0].append(json_data[line]["pageloaded"])
+        		page_stats[1].append(json_data[line]["widgetviewed"])
+        		page_stats[2].append(json_data[line]["widgetused"])
+        		page_stats[3].append(str(json_data[line]["title"]))
 	return corpus, engagement_rate, page_stats
+	txtfile.close()
 

@@ -66,7 +66,7 @@ Alphas=[0]
 Tol=0.001
 Min_DF=float(sys.argv[4])
 
-N_Estimators=100
+N_Estimators=10
 
 DSampling=False
 DSampling_Rate=0.50
@@ -90,11 +90,12 @@ print "size of corpus target:%d" % len(engagement_rate)
 print len(engagement_rate)/4.
 
 #Test_Size=1./(CV-1)
-Test_Size=0.50
+#Test_Size=0.50
+Test_Size=0
 
 print "Relative test data size:%.3g" % Test_Size
 #ADDITIONAL STOPWORDS
-my_words = ["considering","proper","agree", "soon", "changing", "wish", "flickr", "protect","including", 
+my_words = ["0", "2015", "considering", "proper","agree", "soon", "changing", "wish", "flickr", "protect","including", 
 		"example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"] 
 
 my_stop_words = text.ENGLISH_STOP_WORDS.union(my_words)
@@ -142,12 +143,9 @@ if DSampling==True:
 	downsampled_nonzeros=resample(matrix_of_zeros, n_samples=downsampling, random_state=0, replace = False)
 
 	print len(downsampled_nonzeros)
-	#print downsampled_nonzeros
 
 	downsampled_total = np.concatenate((downsampled_nonzeros,matrix_of_nonzeros))
-#print matrix_of_nonzeros
 	downsampled_engagement = downsampled_total[:,(len(downsampled_total[0])-1):(len(downsampled_total[0]))]
-#print "downsampled engagement %s: " % downsampled_engagement
 	downsampled_training = downsampled_total[:,:-1]
 	#print downsampled_training
 	#print downsampled_training.shape
@@ -222,7 +220,7 @@ coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Int
 #coef_path_lasso_cv = LassoCV(normalize=Normalize, max_iter=Max_Iter, copy_X=True, cv=CV, verbose=Verbose, fit_intercept=Fit_Intercept, tol=Tol)#, alphas=Alphas) 
 #coef_path_elastic_cv = ElasticNetCV(normalize=Normalize,max_iter=Max_Iter, tol=Tol)#,alphas=Alphas)
 coef_path_logistic_cv = LogisticRegression(penalty='l2', tol=Tol)
-coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, max_features='auto', random_state=ite)
+coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, random_state=ite, criterion='entropy', max_features=number_of_features)
 
 
 coef_path_forest_cv.fit(X,binary_y)
