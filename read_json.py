@@ -20,6 +20,7 @@ def replace_bigrams(input_paragraph):
         return output_paragraph
 
 def read_json(json_file, widget, page_loaded_cut, widget_viewed_cut):
+	print json_file
 	corpus = []
 	engagement_rate = []
 	page_stats = [[], [] ,[], []]
@@ -34,7 +35,7 @@ def read_json(json_file, widget, page_loaded_cut, widget_viewed_cut):
 			if json_data[line]["pageloaded"]<page_loaded_cut: continue 
 			if json_data[line]["widgetviewed"]<widget_viewed_cut: continue 
     			if widget not in str(json_data[line]["type"]): continue
-     			print "url:%s, type:%s" % (str(json_data[line]["title"]), str(json_data[line]["type"]))
+     			#print "url:%s, type:%s" % (str(json_data[line]["title"]), str(json_data[line]["type"]))
      			if json_data[line]["widgetviewed"]!=0: engagement_rate.append(json_data[line]["widgetused"]/json_data[line]["widgetviewed"])
         		else: engagement_rate.append(0)
         		join_body="".join(json_data[line]["body"])

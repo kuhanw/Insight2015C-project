@@ -23,6 +23,7 @@ import ROOT
 from read_json import *
 
 #build vocabulary matrix
+ROOT.gStyle.SetTitleSize(.05, "XY")
 
 Decode_Error = "ignore"
 
@@ -30,10 +31,10 @@ Decode_Error = "ignore"
 widget_selection = "budgetcalculator"
 #widget_selection = "careercalculator"
 
-if widget_selection=="budgetcalculator": hist_title="Asset Type 1"
-if widget_selection=="careercalculator": hist_title="Asset Type 2"
-if widget_selection=="homeaffordability": hist_title="Asset Type 3"
-if widget_selection=="assetallocationcalculator": hist_title="Asset Type 4"
+if widget_selection=="budgetcalculator": hist_title="Ad Type 1"
+if widget_selection=="careercalculator": hist_title="Ad Type 2"
+if widget_selection=="homeaffordability": hist_title="Ad Type 3"
+if widget_selection=="assetallocationcalculator": hist_title="Ad Type 4"
 figures_folder = "figures/"+widget_selection + "/"
 corpus, engagement_rate, page_stats = read_json("web_text_v12_data_set_1_2.json",widget_selection, 0, 0)
 
@@ -86,8 +87,8 @@ for i in range(len(page_stats[0])):
 c_hist_engagementrate = ROOT.TCanvas("c_hist_engagementrate","c_hist_engagementrate",0,0,3000,2000)
 c_hist_engagementrate.SetLogy()
 hist_engagementrate.GetXaxis().SetTitle("Frequency of Engagement")
-hist_engagementrate.GetYaxis().SetTitle("Entries/0.01 bins")
-hist_engagementrate.SetTitle("Asset Type 1")
+hist_engagementrate.GetYaxis().SetTitle("Counts")
+hist_engagementrate.SetTitle("Ad Type 1")
 hist_engagementrate.Draw("COLZ")
 c_hist_engagementrate.SaveAs(figures_folder+ "engagementRate.pdf")
 
@@ -102,7 +103,7 @@ c_hist_widgetviewed_pagesloaded.SaveAs(figures_folder+ "widgetViewed_pagesLoaded
 c_hist_widgetclicked_pagesloaded = ROOT.TCanvas("c_hist_widgetclicked_pagesloaded","c_hist_widgetclicked_pagesloaded",0,0,3000,2000)
 hist_widgetclicked_pagesloaded.GetXaxis().SetTitle("WidgetsClicked")
 hist_widgetclicked_pagesloaded.GetYaxis().SetTitle("PagesLoaded")
-hist_widgetclicked_pagesloaded.SetTitle(hist_title)
+hist_widgetclicked_pagesloaded.SetTitle('Data Summary')
 hist_widgetclicked_pagesloaded.Draw("COLZ")
 c_hist_widgetclicked_pagesloaded.SaveAs(figures_folder+ "widgetClicked_pagesLoaded.pdf")
 
@@ -110,8 +111,8 @@ legend = ROOT.TLegend(0.6,0.65,0.88,0.85);
 legend.SetTextFont(72);
 legend.SetTextSize(0.04);
 legend.AddEntry(hist_pagesloaded,"Page Loaded","l");
-legend.AddEntry(hist_widgetviewed,"Asset Viewed","l");
-legend.AddEntry(hist_widgetclicked,"Asset Clicked","l");
+legend.AddEntry(hist_widgetviewed,"Ad Viewed","l");
+legend.AddEntry(hist_widgetclicked,"Ad Clicked","l");
 c_hist_pagesloaded = ROOT.TCanvas("c_hist_pagesloaded","c_hist_pagesloaded",0,0,3000,2000)
 c_hist_pagesloaded.SetLogy()
 hist_pagesloaded.GetYaxis().SetLabelOffset(999);
@@ -119,8 +120,8 @@ hist_pagesloaded.GetYaxis().SetLabelSize(0);
 hist_pagesloaded.GetXaxis().SetLabelOffset(999);
 hist_pagesloaded.GetXaxis().SetLabelSize(0);
 hist_pagesloaded.GetXaxis().SetTitle("Occurrences")
-hist_pagesloaded.GetYaxis().SetTitle("Entries/1 bin")
-hist_pagesloaded.SetTitle(hist_title)
+hist_pagesloaded.GetYaxis().SetTitle("Counts")
+hist_pagesloaded.SetTitle('Summary of Engagement Data')
 hist_pagesloaded.SetMinimum(0.1001)
 hist_pagesloaded.Draw()
 hist_widgetviewed.SetLineColor(2)

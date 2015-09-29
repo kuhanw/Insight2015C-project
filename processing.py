@@ -126,11 +126,6 @@ with open('one_rank_correlation_v12_' + data_set + '.csv', 'wb') as csvfile:
 csvfile.close()
 
 plt.figure()
-plt.subplot(1,2,1)
-plt.xlabel("Widgets")
-plt.ylabel("Total Score")
-plt.bar(np.arange(0,31,1),widget_scores,1)
-plt.subplot(1,2,2)
 plt.bar(np.arange(0,31,1),widget_placements,1)
 plt.xlabel("Widgets")
 plt.ylabel("Total Placement")
