@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# Filename: read_json.py
 import re
 import json
 import sys

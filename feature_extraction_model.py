@@ -4,13 +4,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.metrics import *
 
-from sklearn import cross_validation, datasets, linear_model
+from sklearn import cross_validation
 from sklearn.feature_extraction import text 
 from sklearn.utils import resample
 from sklearn.cross_validation import train_test_split
@@ -25,56 +24,18 @@ import numpy as np
 from read_json import *
 from post_processing import *
 
-import argparse
-
-
 def make_binary(y):
 
 	binary_y_pre = []
-
 	for i in range(len(y)):
 		if y[i]>0: binary_y_pre.append(1)
 		else: binary_y_pre.append(0)
 
 	return binary_y_pre
 
-def get_args():
+def feature_extraction_model(widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite, Find, input_json_name):
 
-	'''This function parses and return arguments passed in'''
-	# Assign description to the help doc
-	parser = argparse.ArgumentParser(
-	description='Execute Text Analysis Pipeline')
-	# Add arguments
-	parser.add_argument(
-	'-w', '--widget_selection', type=str, help='Widget type [str]', required=True)
-	parser.add_argument(
-	'-nL', '--Ngram_Range_Low', type=int, help='Lower n-gram range [int]', required=True)
-	parser.add_argument(
-	'-nH', '--Ngram_Range_High', type=int, help='Upper n-gram range [int]', required=True)
-	parser.add_argument(
-	'-mDF', '--Min_DF', type=float, help='Minimum term document frequency between 0 to 1 [float]', required=True)
-	parser.add_argument(
-	'-pLoad', '--PageLoaded', type=int, help='Minimum page views [int]', required=True)
-	parser.add_argument(
-	'-wView', '--WidgetViewed', type=int, help='Minimum widget views [int]', required=True)
-	parser.add_argument(
-	'-Seed', '--ite', type=int, help='Random seed [int]', required=True)
-	# Array for all arguments passed to script
-	args = parser.parse_args()
-	# Assign args to variables
-	widget_selection = args.widget_selection
-	Ngram_Range_Low = args.Ngram_Range_Low
-	Ngram_Range_High = args.Ngram_Range_High
-	Min_DF = args.Min_DF
-	PageLoaded = args.PageLoaded
-	WidgetViewed = args.WidgetViewed
-	ite = args.ite
-	# Return all variable values
-	return widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite
-
-def main(arvg):
-
-	widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite = get_args()
+	print "###FEATURE EXTRACTION MODEL###"
 
 	figures_folder = "figures/"+widget_selection + "/"
 
@@ -110,17 +71,16 @@ def main(arvg):
 
 	print "%s, %s, %s, %s, %s, %s, %s" % (widget_selection, Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite)
 
-	corpus, engagement_rate, page_stats = read_json(input_json, widget_selection, PageLoaded, WidgetViewed)
+	corpus, engagement_rate, page_stats = read_json(input_json_name, widget_selection, PageLoaded, WidgetViewed)
 
 	print "size of corpus:%d" % len(corpus)
 	print "size of corpus target:%d" % len(engagement_rate)
-	print len(engagement_rate)/4.
 
-	#Test_Size=1./(CV-1)
-	Test_Size=0.50
-	#Test_Size=0
-
+	if Find>0 : Test_Size=Find
+	else: Test_Size=0.5
+	
 	print "Relative test data size:%.3g" % Test_Size
+
 	#ADDITIONAL STOPWORDS
 	my_words = ["0", "2015", "considering", "proper","agree", "soon", "changing", "wish", "flickr", "protect","including", 
 			"example", "want", "concept", "photo", "like" ,"comes", "things", "com", "don", "help"] 
@@ -150,8 +110,7 @@ def main(arvg):
 	engagement_matrix = np.array(engagement_rate)
 
 	print "training matrix:%d, engagement matrix:%d" % (len(training_matrix), len(engagement_matrix))
-	#print training_matrix
-	#print engagement_matrix
+	
 	total_matrix =  np.column_stack((training_matrix, engagement_matrix))
 	matrix_of_zeros = []
 	matrix_of_nonzeros = []
@@ -218,11 +177,12 @@ def main(arvg):
 
 	binary_y = np.array(make_binary(y))
 
-	coef_path_linear_cv = LinearRegression(normalize=Normalize,fit_intercept=Fit_Intercept) 
 	coef_path_SGD_cv = SGDClassifier(loss='hinge', penalty='elasticnet') 
 	coef_path_logistic_cv = LogisticRegression(penalty='l2', tol=Tol)
 	coef_path_forest_cv = RandomForestClassifier(n_estimators = N_Estimators, random_state=ite, criterion='entropy', max_features=number_of_features)
 
+	print X.shape
+	print binary_y.shape
 
 	coef_path_forest_cv.fit(X,binary_y)
 	coef_path_SGD_cv.fit(X,binary_y)
@@ -265,52 +225,11 @@ def main(arvg):
 					accuracy_score(np.array(make_binary(y)), logistic_prediction_training),
 					confusion_matrix(np.array(make_binary(y)), logistic_prediction_training)
 					]
-	print "TTTTTTTTTTTTT"
-	print logistic_cv_score
-	print "TTTTTTTTTTTTT"
-	linear_reg=0
-	if linear_reg==1:
-	##LINEAR REGRESSION METHOD BEGIN
-		reduced_feature_matrix_logistic = []
-		print "list of features from logistic regression:%d" % len(logistic_results_parameters[2][0])
-		print len(X[0])
-		transpose_training_X = zip(*X)
-		reduced_feature_list_logistic = []
-
-		for i in range(len(logistic_results_parameters[2][0])):
-			if float(logistic_results_parameters[2][0][i])>0.01:
-				reduced_feature_matrix_logistic.append(transpose_training_X[i])
-				reduced_feature_list_logistic.append(list_of_features[i])
-
-		print "reduced_feature_matrix_logistic before transpose:%d" % len(reduced_feature_matrix_logistic)	
-		reduced_feature_matrix_logistic = zip(*reduced_feature_matrix_logistic)
-		print "reduced_feature_matrix_logistic after transpose:%d" % len(reduced_feature_matrix_logistic)
-
-		coef_path_linear_cv.fit(reduced_feature_matrix_logistic,y)
-
-		linear_cv_score = cross_validation.cross_val_score(coef_path_linear_cv, reduced_feature_matrix_logistic, y, n_jobs=2, cv=CV, scoring=Scoring_1)
-
-		linear_results_parameters = [ coef_path_linear_cv.predict(reduced_feature_matrix_logistic), coef_path_linear_cv.get_params,reduced_feature_list_logistic, coef_path_linear_cv.coef_]
-
-		linear_scores = [linear_cv_score, r2_score(y, linear_results_parameters[0]), 'linear']
-
-		print "reduced_feature_list_logistic length:%d" % len(reduced_feature_list_logistic)
-		print "linear_coefficient length:%d" % len(coef_path_linear_cv.coef_)
-		linear_word_results = []
-
-		for i in range(len(coef_path_linear_cv.coef_)):
-			temp_list = [reduced_feature_list_logistic[i], coef_path_linear_cv.coef_[i]]
-			linear_word_results.append(temp_list)
-
-	###LINEAR REGRESSION END
-
+	
 	model_results = [forest_results_parameters, SGD_results_parameters, logistic_results_parameters]
 
 	model_scores = [forest_scores, SGD_scores, logistic_scores]
 
-	post_processing(model_results, model_scores, X, y, widget_selection, list_of_features, 
-			Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite, x_test)
-
-if __name__ == "__main__":
-	main(sys.argv[1:])
+	return model_results, model_scores, X, y, widget_selection, list_of_features,\
+						 Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite, x_test
 
