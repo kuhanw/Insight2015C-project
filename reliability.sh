@@ -5,12 +5,12 @@
 #python FeatureRank.py assetallocationcalculator 1 1
 #python FeatureRank.py careercalculator 1 1
 
-for j in `seq 101 1000`
+for j in `seq 1 1000`
 do
-python FeatureRank.py -json web_text_v12_data_set_1_2.json -w budgetcalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.25 
-python FeatureRank.py -json web_text_v12_data_set_1_2.json -w homeaffordability -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.25 
-python FeatureRank.py -json web_text_v12_data_set_1_2.json -w assetallocationcalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.25
-python FeatureRank.py -json web_text_v12_data_set_1_2.json -w careercalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.25 
+python FeatureRank.py -json web_text_data_set_1_2.json -w budgetcalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.50 
+#python FeatureRank.py -json web_text_data_set_1_2.json -w homeaffordability -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.33 
+#python FeatureRank.py -json web_text_data_set_1_2.json -w assetallocationcalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.33
+#python FeatureRank.py -json web_text_data_set_1_2.json -w careercalculator -nL 1 -nH 2 -mDF 0.02 -pLoad 5 -wView 1 -Seed $j -f 0.33 
 
 #python FeatureRank.py -json web_text_v12_data_set_1_2.json -w budgetcalculator -nL 1 -nH 2 -mDF 0.05 -pLoad 5 -wView 1 -Seed $j 
 #python FeatureRank.py -json web_text_v12_data_set_1_2.json -w homeaffordability -nL 1 -nH 2 -mDF 0.05 -pLoad 5 -wView 1 -Seed $j 

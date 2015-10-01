@@ -1,7 +1,6 @@
-import ROOT
-import csv
+###Kuhan Wang, October 1st, 2015
 
-import numpy as np
+import csv
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -10,9 +9,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import accuracy_score
 
-ROOT.gStyle.SetOptStat(11111)
-ROOT.gStyle.SetPalette(1)
-ROOT.gROOT.SetBatch(1)
+import os
 
 def post_processing(model_results, model_scores, training_set, target, widget, list_of_features, 
 			Ngram_Range_Low, Ngram_Range_High, Min_DF, PageLoaded, WidgetViewed, ite, x_test, Find):
@@ -24,10 +21,9 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 
 	widget_selection = widget
 
-	figures_folder = "figures/"+widget_selection + "/"
+	results_folder = "results/"+widget_selection + "/"
 
-	X = training_set
-	y = target
+	if not os.path.exists(results_folder): os.makedirs(results_folder)
 
 	forest_results_parameters = model_results[0]
 	SGD_results_parameters = model_results[1]
@@ -38,8 +34,9 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	logistic_scores = model_scores[2]
 
 	summary_scoring_metrics = [ forest_scores, SGD_scores, logistic_scores ]
-	score_metrics = open(figures_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF) \
-				 +"_"+PageLoaded+"_"+WidgetViewed+'_iteration'+str(ite)+"_"+str(Find)+'.txt', 'w')
+	score_metrics = open(results_folder +'validation_' + str(Ngram_Range_Low) +'_' + str(Ngram_Range_High)+ "_" + str(Min_DF) \
+				 +"_"+PageLoaded+"_"+WidgetViewed+'_'+str(ite)+"_"+str(Find)+'.txt', 'w')
+
 	for i in range(len(summary_scoring_metrics)):
 		if i==0: print 'FOREST'
 		if i==1: print 'SGD'
@@ -50,6 +47,7 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 						+ ',' + str(summary_scoring_metrics[i][5])
 						+'\n' )
 		conf_matrix = confusion_matrix(model_results[i][4], model_results[i][3]) 
+
 		try: score_metrics.write("Test Precision :%.5g, Recall :%.5g, Accuracy :%.5g, Confusion:%d,%d,%d,%d,\n:" % (
 				precision_score(model_results[i][4], model_results[i][3])
 				,recall_score(model_results[i][4], model_results[i][3])
@@ -63,6 +61,7 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 		except: continue
 		print summary_scoring_metrics[i][0]
 		score_metrics.write('@@@@@@@ \n')
+
 	score_metrics.close()
 	word_priority = []
 	print len(list_of_features)
@@ -74,8 +73,6 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 	word_priority_forest = sorted (word_priority, key= lambda x: float(x[2]), reverse=True)
 	word_priority_SGD = sorted(word_priority, key= lambda x: float(x[3]), reverse=True)
 	word_priority_logistic = sorted (word_priority, key= lambda x: float(x[4]), reverse=True)
-
-	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 	ranked_key_words = []
 
@@ -92,11 +89,13 @@ def post_processing(model_results, model_scores, training_set, target, widget, l
 				["logistic feature index"],["logistic rank"],["logistic word"]
 				]
 	
-	with open(figures_folder+"ranked_words_ngram_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ \
-			"_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+"_"+str(Find)+".csv", 'wb') as csvfile:
+	with open(results_folder+"ranked_words_ngram_" + str(Ngram_Range_Low) +"_" + str(Ngram_Range_High)+ \
+			"_" + str(Min_DF)+ "_"+PageLoaded+"_"+WidgetViewed+"_" +str(ite) + '_' + str(Find)+".csv", 'wb') as csvfile:
 	    spamwriter = csv.writer(csvfile, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
 	    spamwriter.writerow(ranked_words_header)
 	    for i in range(len(ranked_key_words)):
 	       	spamwriter.writerow(ranked_key_words[i])
 
 	csvfile.close()	
+
+	print "!!!!!!!!!!!!!!!!FINISHED!!!!!!!!!!!!!!!!!!!!!!!!"

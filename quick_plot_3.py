@@ -8,11 +8,11 @@ ROOT.gStyle.SetStatY(0.37)
 ROOT.gStyle.SetTitleSize(.05, "XY")
 all_lines = []
 toys_begin = 1 
-toys = 100
+toys = 363
 Min_DF = 0.02
 #Min_DF = 0.05
 PagesLoaded = 5
-Find = 0.25
+Find = 0.50
 widget = 'budgetcalculator'
 #widget = 'homeaffordability'
 #widget = 'assetallocationcalculator'
@@ -55,7 +55,7 @@ if widget=="assetallocationcalculator": hist_title="Ad Type 4"
 
 
 for i in range(toys_begin,toys,1):
-	with open('figures/' + widget + '/validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_1_iteration'+str(i)+'_'+str(Find)+'.txt') as values:
+	with open('results/' + widget + '/validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_1_iteration'+str(i)+'_'+str(Find)+'.txt') as values:
 		count=0
 		line_total = []
        		for line in values:
@@ -89,13 +89,12 @@ for i in range(0,len(all_lines),1):
 	try:
 		print "%d, %s" % (i, all_lines[i][line_parse])
 		line_value_0 = str(all_lines[i][line_parse].split(',')[1][1:-1])		
-	#	print line_value_0
-	#	print all_lines[i][4]
+		
 		class_values = float(all_lines[i][line_parse+1].split(',')[0].split(':')[1]) #precision
 		class_values_2 = float(all_lines[i][line_parse+1].split(',')[1].split(':')[1]) #recall
 		class_values_3 = float(all_lines[i][line_parse+1].split(',')[2].split(':')[1]) #accuracy
 		try: f1 = 2*class_values*class_values_2/(class_values+class_values_2)
-		except: f1=0
+		except: f1 = 0
 		conf_a = float(all_lines[i][line_parse+1].split(',')[3].split(':')[1])
 		conf_b = float(all_lines[i][line_parse+1].split(',')[4])
 		conf_c = float(all_lines[i][line_parse+1].split(',')[5])
@@ -116,7 +115,7 @@ for i in range(0,len(all_lines),1):
 		#print "%d, class_value_3:%.3g" % (i, class_values_3) #accuracy
 		#print "%d, %s" % (i, line_value_0_list)
 	  	line_value_0_temp_list_avg=(line_value_0_list[0]+line_value_0_list[1]+line_value_0_list[2])/3.
-		hist_1.Fill(line_value_0_temp_list_avg, class_values)
+		hist_1.Fill(line_value_0_temp_list_avg, f1)
 		hist_2.Fill(class_values, class_values_2)
 		hist_3.Fill(class_values, class_values_3)
 		hist_4.Fill(class_values, lift)
@@ -136,11 +135,11 @@ pt.SetLineColor(10)
 
 
 c_hist_1 = ROOT.TCanvas("c_hist_1", "c_hist_1", 0, 0, 2400, 2000)
-hist_1.GetXaxis().SetTitle('Avg of 3-fold Training Precision')
-hist_1.GetYaxis().SetTitle('Test Sample Precision')
-hist_1.SetTitle(hist_title)
+hist_1.GetXaxis().SetTitle('Avg of 3-fold Training f1')
+hist_1.GetYaxis().SetTitle('Test Sample f1')
+hist_1.SetTitle('Distribution of f1 Scores')
 hist_1.Draw('COLZ')
-c_hist_1.SaveAs('k_fold_valid_p_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
+c_hist_1.SaveAs('k_fold_valid_f1_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_2 = ROOT.TCanvas("c_hist_2", "c_hist_2", 0, 0, 2400, 2000)
 hist_2.SetAxisRange(0.25,0.95,"X")
@@ -160,57 +159,55 @@ c_hist_2.SaveAs('k_fold_valid_pvsr_result_' + widget  + '_validation_1_2_' + str
 c_hist_3 = ROOT.TCanvas("c_hist_3", "c_hist_3", 0, 0, 2400, 2000)
 hist_3.GetXaxis().SetTitle('Precision')
 hist_3.GetYaxis().SetTitle('Accuracy')
-hist_3.SetTitle(hist_title)
+hist_3.SetTitle('Distribution of Precision vs Accuracy')
 hist_3.Draw('COLZ')
 c_hist_3.SaveAs('k_fold_valid_pvsa_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_4 = ROOT.TCanvas("c_hist_4", "c_hist_4", 0, 0, 2400, 2000)
 hist_4.GetXaxis().SetTitle('Precision')
 hist_4.GetYaxis().SetTitle('Lift')
-hist_4.SetTitle(hist_title)
+hist_4.SetTitle('Distribution of Precision vs Lift')
 hist_4.Draw('COLZ')
 c_hist_4.SaveAs('k_fold_valid_pvsl_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_5 = ROOT.TCanvas("c_hist_5", "c_hist_5", 0, 0, 2400, 2000)
 hist_5.GetXaxis().SetTitle('Recall')
 hist_5.GetYaxis().SetTitle('Accuracy')
-hist_5.SetTitle(hist_title)
+hist_5.SetTitle('Distribution of Recall vs Accuracy')
 hist_5.Draw('COLZ')
 c_hist_5.SaveAs('k_fold_valid_rvsa_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_6 = ROOT.TCanvas("c_hist_6", "c_hist_6", 0, 0, 2400, 2000)
 hist_6.GetXaxis().SetTitle('Recall')
 hist_6.GetYaxis().SetTitle('Lift')
-hist_6.SetTitle(hist_title)
-#hist_6.SetTitle("Ad 1")
+hist_6.SetTitle('Distribution of Recall vs Lift')
 hist_6.Draw('COLZ')
 c_hist_6.SaveAs('k_fold_valid_rvsl_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_7 = ROOT.TCanvas("c_hist_7", "c_hist_7", 0, 0, 2400, 2000)
 hist_7.GetXaxis().SetTitle('Accuracy')
 hist_7.GetYaxis().SetTitle('Lift')
-hist_7.SetTitle(hist_title)
+hist_7.SetTitle('Distribution of Accuracy vs Lift')
 hist_7.Draw('COLZ')
 c_hist_7.SaveAs('k_fold_valid_avsl_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_8 = ROOT.TCanvas("c_hist_8", "c_hist_8", 0, 0, 2400, 2000)
 hist_8.GetXaxis().SetTitle('f1')
 hist_8.GetYaxis().SetTitle('Accuracy')
-hist_8.SetTitle(hist_title)
+hist_8.SetTitle('Distribution of f1 versus Accuracy')
 hist_8.Draw('COLZ')
 c_hist_8.SaveAs('k_fold_valid_f1vsa_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_9 = ROOT.TCanvas("c_hist_9", "c_hist_9", 0, 0, 2400, 2000)
 hist_9.GetXaxis().SetTitle('f1')
 hist_9.GetYaxis().SetTitle('Lift')
-hist_9.SetTitle(hist_title)
+hist_9.SetTitle('Distribution of f1 vs Lift')
 hist_9.Draw('COLZ')
 c_hist_9.SaveAs('k_fold_valid_f1vsl_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
 
 c_hist_10 = ROOT.TCanvas("c_hist_10", "c_hist_10", 0, 0, 2400, 2000)
 hist_10.GetXaxis().SetTitle('f1')
 hist_10.GetYaxis().SetTitle('Recall')
-hist_10.SetTitle("Ad Type 1")
-#hist_10.SetTitle(hist_title)
+hist_10.SetTitle('Distribution of f1 versus Recall')
 hist_10.Draw('COLZ')
 c_hist_10.SaveAs('k_fold_valid_f1vsr_result_' + widget  + '_validation_1_2_' + str(Min_DF) + '_' + str(PagesLoaded) + '_' + str(algo) + '_1'+'_'+str(Find)+ '.pdf')
