@@ -1,4 +1,4 @@
-# Insight2015C-project
+# FeatureRank
 
 This was the consulting project I did for an ad-tech startup in NYC as a part of my time in the Insight Data Science fellowship in Fall of 2015.
 The goal was to predict how to optimize target advertisements based on text contents of websites. 
