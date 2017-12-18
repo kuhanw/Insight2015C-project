@@ -1,7 +1,7 @@
 # FeatureRank
 
 This was the consulting project I did for an ad-tech startup in NYC as a part of my time in the Insight Data Science fellowship in Fall of 2015.
-The goal was to predict how to optimize target advertisements based on text contents of websites. 
+The goal was to predict how to optimally place advertisements on select websites based on their content. 
 
 I built an end-to-end pipeline that extracted NLP based features from the text of websites and fed it into a number of different classifiers
 to perform prediction. The target being the degree of user engagement with the target ad. 
